@@ -1,0 +1,9 @@
+# WebSocket-Client: HA-Events empfangen (eingehende WhatsApp, Freigabe-Taps).
+websocket-client==1.8.0
+
+# Sonst nichts mehr. Mit dem Bildschirmweg sind am 18.08.2026 weggefallen:
+#   requests      Guacamole-HTTP-Tunnel zum Panel
+#   Pillow        Bildschirmaufnahmen zusammensetzen und zuschneiden
+#   anthropic     Auslesen mit Claude Haiku
+#   google-genai  Auslesen mit Gemini
+# Der CSV-Auszug wird mit ftplib aus der Standardbibliothek geholt.

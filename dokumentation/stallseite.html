@@ -1,0 +1,741 @@
+<meta charset="utf-8">
+<title>Fütterungsdaten für Einsteller</title>
+
+<style>
+:root{
+  --grund:#F2F4F1; --flaeche:#FFFFFF; --erhoben:#FAFBFA; --rand:#DFE4DF;
+  --tinte:#1B221E; --gedaempft:#5E6862; --leise:#8A948E;
+  --akzent:#1F5F63; --akzent-weich:#E6EFEF;
+  --gut:#2E7D4F; --gut-weich:#E4F0E8;
+  --warn:#B4571A; --warn-weich:#F7EADD;
+  --kritisch:#A8322A; --kritisch-weich:#F6E3E1;
+  --neutral-weich:#EAEEE9;
+  --sans:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+  --mass:41rem;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --grund:#121614; --flaeche:#1A211D; --erhoben:#1F2723; --rand:#2B342E;
+    --tinte:#E8EDE9; --gedaempft:#94A099; --leise:#78837C;
+    --akzent:#4FB3B8; --akzent-weich:#17302F;
+    --gut:#58B87E; --gut-weich:#1B2F23;
+    --warn:#E08A47; --warn-weich:#322317;
+    --kritisch:#E0685C; --kritisch-weich:#33201E;
+    --neutral-weich:#212824;
+  }
+}
+:root[data-theme="dark"]{
+  --grund:#121614; --flaeche:#1A211D; --erhoben:#1F2723; --rand:#2B342E;
+  --tinte:#E8EDE9; --gedaempft:#94A099; --leise:#78837C;
+  --akzent:#4FB3B8; --akzent-weich:#17302F;
+  --gut:#58B87E; --gut-weich:#1B2F23;
+  --warn:#E08A47; --warn-weich:#322317;
+  --kritisch:#E0685C; --kritisch-weich:#33201E;
+  --neutral-weich:#212824;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--grund); color:var(--tinte);
+  font-family:var(--sans); font-size:1.0625rem; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.huelle{max-width:var(--mass); margin:0 auto; padding:3.5rem 1.25rem 5rem;
+  display:flex; flex-direction:column; gap:3.25rem}
+@media(min-width:48rem){ .huelle{padding:5rem 2rem 7rem; gap:4.25rem} }
+
+.rubrik{font-family:var(--mono); font-size:.7rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--akzent); margin:0 0 .9rem}
+
+h1{font-size:clamp(2.6rem,10vw,4rem); font-weight:300; letter-spacing:-.025em;
+  line-height:1.04; margin:0 0 1.4rem; text-wrap:balance}
+h2{font-size:clamp(1.5rem,5vw,1.9rem); font-weight:300; letter-spacing:-.02em;
+  line-height:1.18; margin:0 0 1rem; text-wrap:balance}
+h3{font-size:1.05rem; font-weight:650; margin:0 0 .5rem; letter-spacing:-.005em}
+p{margin:0 0 1rem}
+p:last-child{margin-bottom:0}
+strong,b{font-weight:650}
+a{color:var(--akzent)}
+
+.gross{font-size:1.2rem; line-height:1.55; color:var(--gedaempft)}
+.klein{font-size:.9rem; line-height:1.55; color:var(--gedaempft)}
+.abschnitt{display:flex; flex-direction:column; gap:1.1rem}
+
+/* Faktenleiste */
+.fakten{display:flex; flex-direction:column; gap:0; border-top:1px solid var(--rand)}
+.faktum{display:flex; gap:1rem; padding:.85rem 0; border-bottom:1px solid var(--rand);
+  align-items:baseline}
+.faktum dt{flex:0 0 9.5rem; font-family:var(--mono); font-size:.72rem;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--leise); margin:0}
+.faktum dd{margin:0; flex:1; font-size:.98rem}
+@media(max-width:28rem){
+  .faktum{flex-direction:column; gap:.15rem}
+  .faktum dt{flex:none}
+}
+
+/* Kästen */
+.merk{background:var(--flaeche); border:1px solid var(--rand);
+  border-left:3px solid var(--akzent); border-radius:.2rem; padding:1.1rem 1.2rem;
+  font-size:.97rem}
+.merk.gut{border-left-color:var(--gut); background:var(--gut-weich)}
+.merk.warn{border-left-color:var(--warn); background:var(--warn-weich)}
+.merk h3{font-size:.95rem; margin-bottom:.35rem}
+.merk p+p{margin-top:.7rem}
+
+/* Ablauf */
+.ablauf{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.1rem}
+.ablauf li{display:flex; gap:1rem; padding:.9rem 0; border-bottom:1px solid var(--rand)}
+.ablauf li:first-child{border-top:1px solid var(--rand)}
+.ablauf .wann{flex:0 0 5.5rem; font-family:var(--mono); font-size:.75rem;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--akzent); padding-top:.15rem}
+.ablauf .was{flex:1; font-size:.97rem}
+
+/* Preise */
+.preise{width:100%; border-collapse:collapse; font-size:.97rem}
+.preise td{padding:.7rem 0; border-bottom:1px solid var(--rand)}
+.preise td+td{text-align:right; font-family:var(--mono); font-size:.9rem;
+  font-variant-numeric:tabular-nums; white-space:nowrap}
+.preise tr:last-child td{border-bottom:none}
+
+/* ---------- Bildschirm-Nachbildungen ---------- */
+.schirm{margin:0; display:flex; flex-direction:column; gap:.55rem}
+.schirm figcaption{font-family:var(--mono); font-size:.68rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--leise)}
+.rahmen{border:1px solid var(--rand); border-radius:.75rem; overflow:hidden;
+  background:var(--flaeche); box-shadow:0 1px 2px rgba(27,34,30,.05),0 10px 30px rgba(27,34,30,.06)}
+
+/* Pferdeseite */
+.pf{background:var(--grund); padding:1.1rem 1rem 1.3rem; font-size:.85rem}
+.pf-stall{font-family:var(--mono); font-size:.6rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--akzent)}
+.pf-name{font-size:1.9rem; font-weight:300; letter-spacing:-.02em; line-height:1.05; margin:.2rem 0}
+.pf-kennung{font-family:var(--mono); font-size:.7rem; color:var(--gedaempft)}
+.pf-knopf{display:inline-block; font-size:.72rem; font-weight:650; color:var(--akzent);
+  background:var(--flaeche); border:1px solid var(--rand); border-radius:.15rem;
+  padding:.35rem .7rem; margin-top:.5rem}
+.pf-reiter{display:flex; gap:.35rem; margin:.75rem 0}
+.pf-reiter span{flex:1; text-align:center; padding:.45rem .2rem; border-radius:.3rem;
+  background:var(--neutral-weich); font-size:.72rem; font-weight:650; color:var(--gedaempft)}
+.pf-reiter span.an{background:var(--akzent); color:var(--flaeche)}
+.karte{background:var(--flaeche); border:1px solid var(--rand); border-radius:.4rem;
+  padding:.75rem .8rem; margin-bottom:.55rem}
+.karte:last-child{margin-bottom:0}
+.karte-kopf{display:flex; justify-content:space-between; align-items:baseline;
+  gap:.5rem; margin-bottom:.5rem}
+.karte-titel{font-size:.9rem; font-weight:650}
+.pille{font-family:var(--mono); font-size:.6rem; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--gedaempft); border:1px solid var(--rand);
+  border-radius:.15rem; padding:.1rem .35rem; white-space:nowrap}
+.urteil{border-left:3px solid var(--gut); background:var(--gut-weich);
+  padding:.6rem .75rem; border-radius:.3rem; margin-bottom:.55rem}
+.urteil-kopf{font-weight:650; font-size:.85rem}
+.urteil-text{font-size:.78rem; color:var(--gedaempft)}
+.zahlen{display:flex; gap:.7rem; margin-bottom:.5rem}
+.zahl{flex:1; min-width:0}
+.zahl-wert{font-size:1.05rem; font-weight:600; font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+.zahl-label{font-size:.6rem; color:var(--gedaempft); text-transform:uppercase;
+  letter-spacing:.05em}
+.balken{height:.4rem; background:var(--neutral-weich); border-radius:.2rem;
+  position:relative; margin:.4rem 0 .25rem}
+.balken i{position:absolute; left:0; top:0; bottom:0; background:var(--gut); border-radius:.2rem}
+.balken u{position:absolute; top:-.15rem; bottom:-.15rem; width:2px; background:var(--tinte)}
+.balken-legende{display:flex; justify-content:space-between; font-size:.6rem; color:var(--gedaempft)}
+.klartext{font-size:.72rem; color:var(--gedaempft); margin-top:.4rem; line-height:1.45}
+.band{height:1.1rem; background:var(--neutral-weich); border-radius:.2rem;
+  position:relative; margin:.4rem 0 .2rem}
+.band i{position:absolute; top:.2rem; bottom:.2rem; width:2px; background:var(--akzent); border-radius:1px}
+.band-achse{display:flex; justify-content:space-between; font-size:.6rem; color:var(--gedaempft)}
+.besuch{padding:.4rem 0; border-bottom:1px solid var(--rand)}
+.besuch:last-of-type{border-bottom:none}
+.b-zeit{font-family:var(--mono); font-weight:700; font-size:.82rem}
+.b-dauer{font-size:.68rem; color:var(--gedaempft); margin-left:.35rem}
+.b-ort{font-size:.72rem; color:var(--gedaempft); margin-left:.35rem}
+.b-was{font-size:.78rem; margin-top:.05rem}
+.b-was em{color:var(--gedaempft)}
+.koppel{display:flex; justify-content:space-between; gap:.5rem; padding:.35rem 0;
+  border-bottom:1px solid var(--rand); font-size:.82rem}
+.koppel:last-of-type{border-bottom:none}
+.k-zeit{font-family:var(--mono); font-weight:700; white-space:nowrap}
+.wzeile{padding:.5rem 0; border-bottom:1px solid var(--rand); font-size:.8rem}
+.wzeile:last-of-type{border-bottom:none}
+
+/* Hofbüro */
+.ing{display:flex; font-size:.78rem; background:var(--erhoben)}
+.ing-bar{flex:0 0 7.5rem; background:#0f172a; color:#94a3b8; padding:.7rem .5rem}
+.ing-logo{color:#fff; font-weight:700; font-size:.8rem; margin-bottom:.8rem}
+.ing-bar div.n{padding:.3rem .45rem; border-radius:.3rem; font-size:.68rem; margin-bottom:.15rem}
+.ing-bar div.n.an{background:#2563eb; color:#fff; font-weight:650}
+.ing-haupt{flex:1; min-width:0; padding:.7rem}
+.ing-karten{display:flex; gap:.4rem; margin-bottom:.6rem}
+.ing-karte{flex:1; min-width:0; background:var(--flaeche); border:1px solid var(--rand);
+  border-radius:.3rem; padding:.45rem}
+.ing-karte .w{font-size:1rem; font-weight:700; font-variant-numeric:tabular-nums}
+.ing-karte .l{font-size:.6rem; color:var(--gedaempft); line-height:1.3}
+.hinw{border-radius:.3rem; padding:.55rem .6rem; font-size:.7rem; margin-bottom:.5rem}
+.hinw.w{background:var(--warn-weich); border:1px solid var(--warn)}
+.hinw.k{background:var(--kritisch-weich); border:1px solid var(--kritisch)}
+.itab{width:100%; border-collapse:collapse; background:var(--flaeche); font-size:.64rem}
+.itab th{background:var(--erhoben); text-align:left; padding:.35rem .3rem;
+  color:var(--gedaempft); font-size:.56rem; text-transform:uppercase;
+  letter-spacing:.04em; border-bottom:1px solid var(--rand); font-weight:650}
+.itab td{padding:.35rem .3rem; border-bottom:1px solid var(--rand); vertical-align:middle}
+.itab tr:last-child td{border-bottom:none}
+.itab .ist{display:block; font-weight:650; font-variant-numeric:tabular-nums}
+.itab .soll{display:block; font-size:.56rem; color:var(--gedaempft)}
+.plakette{display:inline-block; font-size:.56rem; font-weight:700; padding:.1rem .3rem;
+  border-radius:1rem; white-space:nowrap}
+.p-gut{background:var(--gut-weich); color:var(--gut)}
+.p-warn{background:var(--warn-weich); color:var(--warn)}
+.p-krit{background:var(--kritisch-weich); color:var(--kritisch)}
+.p-neu{background:var(--neutral-weich); color:var(--gedaempft)}
+.schiebe{overflow-x:auto; -webkit-overflow-scrolling:touch}
+
+/* Chat */
+.wa{background:#DDD5CC; padding:.9rem}
+:root[data-theme="dark"] .wa{background:#1E2A21}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .wa{background:#1E2A21} }
+.blase{max-width:82%; padding:.45rem .6rem; border-radius:.4rem; font-size:.78rem;
+  margin-bottom:.4rem; background:var(--flaeche); line-height:1.45; color:var(--tinte)}
+.blase.ich{background:var(--gut-weich); margin-left:18%}
+.blase .zeit{display:block; font-size:.58rem; color:var(--leise); text-align:right; margin-top:.15rem}
+.push{background:#1c1c1e; color:#fff; border-radius:.7rem; padding:.75rem; font-size:.78rem}
+.push-app{font-size:.58rem; color:#8e8e93; text-transform:uppercase; letter-spacing:.08em}
+.push-titel{font-weight:700; margin:.15rem 0 .25rem}
+
+code{font-family:var(--mono); font-size:.88em; background:var(--neutral-weich);
+  padding:.08em .35em; border-radius:.2rem; word-break:break-word}
+ul{margin:0 0 1rem; padding-left:1.15rem}
+li{margin-bottom:.4rem}
+li:last-child{margin-bottom:0}
+em{font-style:normal; color:var(--akzent)}
+hr.trenn{border:none; border-top:1px solid var(--rand); margin:0}
+
+/* ---------- Druck: dieselbe Seite als PDF ---------- */
+@media print{
+  /* Lichtpalette erzwingen - gedruckt wird auf Papier, nie im Dunkelmodus. */
+  :root{
+    --grund:#FFFFFF; --flaeche:#FFFFFF; --erhoben:#FAFBFA; --rand:#DFE4DF;
+    --tinte:#1B221E; --gedaempft:#5E6862; --leise:#8A948E;
+    --akzent:#1F5F63; --akzent-weich:#E6EFEF;
+    --gut:#2E7D4F; --gut-weich:#E4F0E8;
+    --warn:#B4571A; --warn-weich:#F7EADD;
+    --kritisch:#A8322A; --kritisch-weich:#F6E3E1;
+    --neutral-weich:#EAEEE9;
+  }
+  @page{
+    size:A4; margin:17mm 16mm 15mm;
+    @bottom-center{content:counter(page) " / " counter(pages);
+      font-family:"Segoe UI",sans-serif; font-size:8pt; color:#8A948E}
+  }
+  @page :first{ @bottom-center{content:""} }
+  /* Beim Druck eine schlichte Schriftfamilie: mit der Variable-Text-Fassung
+     erzeugt WeasyPrint eine Zeichentabelle, aus der sich Umlaute nicht sauber
+     herauskopieren lassen. Sichtbar ist der Unterschied nicht. */
+  body{font-size:10pt; line-height:1.5; background:#fff;
+    font-family:"Segoe UI",system-ui,sans-serif}
+  .rubrik,.mono,code,.b-zeit,.k-zeit,.pf-kennung,.pf-stall,.pille,
+  .faktum dt,.schirm figcaption,.preise td+td{font-family:"Consolas",monospace}
+  .huelle{max-width:none; margin:0; padding:0; display:block}
+  .huelle>*{margin-bottom:5mm}
+  h1{font-size:28pt; margin-bottom:4mm}
+  h2{font-size:15pt}
+  h3{font-size:10.5pt}
+  .gross{font-size:11.5pt}
+  .rubrik{font-size:7.5pt; margin-bottom:2mm}
+  .abschnitt{display:block}
+  .abschnitt>*{margin-bottom:3mm}
+  /* Nichts darf mitten durch eine Abbildung oder einen Kasten brechen. */
+  figure,.rahmen,.merk,.preise,.faktum,.karte{break-inside:avoid; page-break-inside:avoid}
+  h2,h3{break-after:avoid; page-break-after:avoid}
+  .rahmen{box-shadow:none}
+  .schiebe{overflow:visible}
+  .ing{min-width:0!important}
+  /* Im Druck etwas enger als am Bildschirm - sonst laeuft der Anhang um
+     zwei Zeilen auf eine fast leere Seite. */
+  .merk{padding:.8rem .9rem}
+  .faktum{padding:.6rem 0}
+  .fakten{margin-top:0}
+  ul{margin-bottom:.6rem}
+  li{margin-bottom:.25rem}
+  hr.trenn{display:none}
+  section{break-before:page; page-break-before:always}
+  header,section:first-of-type{break-before:auto; page-break-before:auto}
+}
+
+.fuss{font-size:.85rem; color:var(--gedaempft)}
+:focus-visible{outline:2px solid var(--akzent); outline-offset:2px}
+@media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} }
+</style>
+
+<div class="huelle">
+
+  <!-- ============ Auftakt ============ -->
+  <header>
+    <p class="rubrik">HOCO-Abruf · Aktivstall</p>
+    <h1>Jeder Einsteller sieht, was sein Pferd gefressen hat.</h1>
+    <p class="gross">
+      Ihr Fütterungsrechner weiß längst alles — er zeigt es nur niemandem außer
+      dem, der im Büro davorsteht. Dieses System holt die Zahlen heraus und
+      bringt sie dorthin, wo sie gebraucht werden.
+    </p>
+  </header>
+
+  <dl class="fakten">
+    <div class="faktum"><dt>Voraussetzung</dt>
+      <dd><strong>Zurzeit nur für den HIT-Aktivstall von Wasserbauer.</strong>
+        Andere Systeme wurden nicht untersucht.</dd></div>
+    <div class="faktum"><dt>Im Betrieb</dt><dd>seit August 2026, ein paar Dutzend Pferde</dd></div>
+    <div class="faktum"><dt>Aufwand</dt><dd>keiner — die Zahlen kommen alle halbe Stunde von selbst</dd></div>
+    <div class="faktum"><dt>Am Rechner</dt><dd>ändert sich nichts. Das System liest nur.</dd></div>
+    <div class="faktum"><dt>Laufende Kosten</dt><dd>keine. Kein Abo, keine Cloud, nichts je Pferd.</dd></div>
+  </dl>
+
+  <!-- ============ Problem ============ -->
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Worum es geht</p>
+      <h2>Die Zahlen gibt es. Sie kommen nur nicht an.</h2>
+    </div>
+    <p>
+      In einem Aktivstall holt sich jedes Pferd sein Futter selbst. Der Rechner
+      erkennt den Transponder, gibt die eingestellte Ration aus und schreibt
+      mit, wer wann wie viel bekommen hat. Diese Zahlen stehen auf einem
+      Bildschirm im Stallbüro.
+    </p>
+    <p>
+      Dort bleiben sie auch. Wer wissen will, ob sein Pferd sein Heu geholt hat,
+      muss fragen — und jemand muss nachsehen. In einem vollen Stall sind das schnell
+      mehrere Gespräche am Tag, meist über dieselbe Frage.
+    </p>
+    <div class="merk gut">
+      <h3>Die Idee</h3>
+      <p>
+        Der Fütterungsrechner legt seine Daten ohnehin regelmäßig ab. Ein
+        Server im Stallnetz liest sie, bereitet sie auf und verteilt sie.
+        Niemand muss etwas eintippen, abschreiben oder weiterleiten.
+      </p>
+    </div>
+  </section>
+
+  <hr class="trenn">
+
+  <!-- ============ Einsteller ============ -->
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Wer etwas davon hat · 1 von 3</p>
+      <h2>Der Einsteller bekommt eine Seite für sein Pferd.</h2>
+    </div>
+    <p>
+      An jeder Box hängt ein QR-Aufkleber. Einmal scannen, auf den
+      Startbildschirm legen — ab da ist es wie eine App, nur ohne
+      Installation.
+    </p>
+
+    <figure class="schirm">
+      <div class="rahmen"><div class="pf">
+        <div class="pf-stall">Musterhof · Aktivstall</div>
+        <div class="pf-name">Falko</div>
+        <div class="pf-kennung">Nr. 7 · Stand 14.08.2026 15:29 Uhr</div>
+        <div><span class="pf-knopf">Aktualisieren</span></div>
+        <div class="pf-reiter"><span class="an">Heute</span><span>Verlauf</span><span>Mein Pferd</span></div>
+
+        <div class="urteil">
+          <div class="urteil-kopf">Alles in Ordnung</div>
+          <div class="urteil-text">Falko ist gut versorgt.</div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-kopf"><div class="karte-titel">Raufutter</div>
+            <div class="pille">96 % vom Soll</div></div>
+          <div class="zahlen">
+            <div class="zahl"><div class="zahl-wert">46 Min</div><div class="zahl-label">geholt</div></div>
+            <div class="zahl"><div class="zahl-wert">48 Min</div><div class="zahl-label">Soll bis jetzt</div></div>
+            <div class="zahl"><div class="zahl-wert">120 Min</div><div class="zahl-label">am Tag</div></div>
+          </div>
+          <div class="balken"><i style="width:38%"></i><u style="left:40%"></u></div>
+          <div class="balken-legende"><span>0</span><span>▲ Soll bis jetzt</span><span>120 Min</span></div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-kopf"><div class="karte-titel">Kraftfutter</div>
+            <div class="pille">91 % vom Soll</div></div>
+          <div class="zahlen">
+            <div class="zahl"><div class="zahl-wert">0.330 kg</div><div class="zahl-label">geholt</div></div>
+            <div class="zahl"><div class="zahl-wert">0.362 kg</div><div class="zahl-label">Soll bis jetzt</div></div>
+            <div class="zahl"><div class="zahl-wert">0.790 kg</div><div class="zahl-label">am Tag</div></div>
+          </div>
+          <div class="balken"><i style="width:42%"></i><u style="left:46%"></u></div>
+          <div class="balken-legende"><span>0</span><span>▲ Soll bis jetzt</span><span>0.790 kg</span></div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-kopf"><div class="karte-titel">Am Selektionstor</div>
+            <div class="pille">9× erkannt</div></div>
+          <div class="band">
+            <i style="left:3%"></i><i style="left:11%"></i><i style="left:19%"></i>
+            <i style="left:28%"></i><i style="left:40%"></i><i style="left:52%"></i>
+            <i style="left:61%"></i><i style="left:74%"></i><i style="left:88%"></i>
+          </div>
+          <div class="band-achse"><span>0 Uhr</span><span>6</span><span>12</span><span>18</span><span>24 Uhr</span></div>
+          <div class="klartext">Jeder Strich ist eine Erkennung am Tor. Ein
+            gleichmäßig verteilter Tag spricht dafür, dass dein Pferd normal
+            unterwegs ist.</div>
+        </div>
+      </div></div>
+      <figcaption>Reiter „Heute“ — der Tagesblick</figcaption>
+    </figure>
+
+    <figure class="schirm">
+      <div class="rahmen"><div class="pf">
+        <div class="karte">
+          <div class="karte-kopf"><div class="karte-titel">Besuche — letzte 24 Stunden</div>
+            <div class="pille">14×</div></div>
+          <div class="besuch"><div><span class="b-zeit">15:11</span><span class="b-dauer">bis 15:15</span><span class="b-ort">Kraftfutterstation</span></div>
+            <div class="b-was">165 g Kraftfutter, 15 g Mineral</div></div>
+          <div class="besuch"><div><span class="b-zeit">14:25</span><span class="b-dauer">bis 14:27</span><span class="b-ort">Selektionstor</span></div>
+            <div class="b-was"><em>ohne Ausgabe</em></div></div>
+          <div class="besuch"><div><span class="b-zeit">12:47</span><span class="b-dauer">bis 13:04</span><span class="b-ort">Heuschieber</span></div>
+            <div class="b-was">17 Min Heu</div></div>
+          <div class="besuch"><div><span class="b-zeit">08:22</span><span class="b-dauer">bis 08:49</span><span class="b-ort">Heuschieber</span></div>
+            <div class="b-was">26 Min Heu</div></div>
+          <div class="klartext"><strong>Ohne Ausgabe</strong> heißt: dein Pferd war
+            da, hat aber nichts bekommen — meist, weil die Portion für diesen
+            Zeitraum schon geholt war. Das ist normal und kein Fehler.</div>
+        </div>
+        <div class="karte">
+          <div class="karte-kopf"><div class="karte-titel">Änderung wünschen</div></div>
+          <div class="wzeile">Raufutter — Minuten am Tag <strong>150</strong><br>
+            <span class="klartext">Jetzt eingestellt: 120 Min am Tag · Begründung: nimmt ab</span></div>
+          <div class="wzeile">Mineralfutter → <strong>60</strong>
+            <span class="pille" style="color:var(--gut);border-color:var(--gut)">eingetragen</span></div>
+        </div>
+      </div></div>
+      <figcaption>Rückblick und eigene Wünsche</figcaption>
+    </figure>
+
+    <div class="merk">
+      <h3>Wünsche ohne Zettelwirtschaft</h3>
+      <p>
+        Gewünscht wird über Auswahlfelder, nicht über Freitext — es kommt also
+        nichts an, was am Rechner gar nicht einstellbar wäre. Der Wunsch
+        erscheint beim Mitarbeiter auf der Arbeitsliste. Sobald der neue Wert am
+        Rechner steht, hakt sich der Wunsch <strong>von selbst</strong> ab;
+        niemand muss daran denken.
+      </p>
+    </div>
+  </section>
+
+  <hr class="trenn">
+
+  <!-- ============ Mitarbeiter ============ -->
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Wer etwas davon hat · 2 von 3</p>
+      <h2>Der Mitarbeiter bekommt eine Arbeitsliste.</h2>
+    </div>
+    <p>
+      Ein eigener Link mit genau zwei Karten — beide sind Anweisungen für den
+      Gang zum Fütterungsrechner. Bewusst nur zum Nachsehen: Hier lässt sich
+      nichts verstellen.
+    </p>
+
+    <figure class="schirm">
+      <div class="rahmen"><div class="pf">
+        <div class="pf-stall">Musterhof · Aktivstall</div>
+        <div class="pf-name" style="font-size:1.5rem">Stallübersicht</div>
+        <div class="pf-kennung">Stand 14.08.2026 15:29</div>
+
+        <div class="karte" style="margin-top:.75rem">
+          <div class="karte-kopf"><div class="karte-titel">Änderungswünsche</div>
+            <div class="pille">2 offen</div></div>
+          <div class="wzeile"><strong>Nr. 7 Falko</strong><br>
+            Raufutter: 120 Min → <strong>150</strong><br>
+            <span class="klartext">„nimmt ab“ · gestellt 14.08.2026 09:12</span></div>
+          <div class="wzeile"><strong>Nr. 12 Wolke</strong><br>
+            Zeit am Selektionstor: 06:30–09:45 → <strong>07:00–11:00</strong><br>
+            <span class="klartext">„Absprache mit dem Hofbüro“</span></div>
+          <div class="klartext">Eintragen am Fütterungsrechner. Abhaken muss
+            niemand — sobald der Wert dort steht, verschwindet der Wunsch hier
+            von selbst.</div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-kopf"><div class="karte-titel">Koppelzeiten</div>
+            <div class="pille">6 mit Fenster</div></div>
+          <div class="koppel"><span class="k-zeit">06:30 – 09:45</span><span>Nr. 11 <strong>Nele</strong></span></div>
+          <div class="koppel"><span class="k-zeit">06:30 – 09:45</span><span>Nr. 12 <strong>Wolke</strong></span></div>
+          <div class="koppel"><span class="k-zeit">06:00 – 10:00</span><span>Nr. 14 <strong>Django</strong></span></div>
+          <div class="koppel"><span class="k-zeit">00:00 – 07:45</span><span>Nr. 19 <strong>Cosmo</strong></span></div>
+          <div class="koppel"><span class="k-zeit">08:00 – 09:45</span><span>Nr. 25 <strong>Lotte</strong></span></div>
+          <div class="klartext"><strong>Rund um die Uhr</strong> (16): Falko,
+            Samson, Kira, Balu, …<br>
+            <strong>Kein Fenster eingeschaltet</strong> (6): Nora, Emmi, Tarik, …</div>
+        </div>
+      </div></div>
+      <figcaption>Die Stallseite</figcaption>
+    </figure>
+
+    <div class="merk">
+      <h3>Nur das, was zu tun ist</h3>
+      <p>
+        Die meisten Pferde haben rund um die Uhr Zutritt — die stehen
+        zusammengefasst am Ende. Oben stehen nur die sechs, bei denen ein echtes
+        Zeitfenster eingestellt ist. Wer eine Liste mit allen Pferden bekommt, liest
+        keine davon.
+      </p>
+    </div>
+  </section>
+
+  <hr class="trenn">
+
+  <!-- ============ Hofbüro ============ -->
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Wer etwas davon hat · 3 von 3</p>
+      <h2>Das Hofbüro sieht alle Pferde auf einmal.</h2>
+    </div>
+    <p>
+      Mit Ampel. Wer sein Futter nicht holt, fällt auf, bevor jemand fragt.
+    </p>
+
+    <figure class="schirm">
+      <div class="rahmen schiebe"><div class="ing" style="min-width:30rem">
+        <div class="ing-bar">
+          <div class="ing-logo">🐴 HOCO-Abruf</div>
+          <div class="n an">Übersicht</div>
+          <div class="n">Einsteller</div>
+          <div class="n">Einstellungen</div>
+          <div class="n">Vorlagen</div>
+          <div class="n">Monitor</div>
+        </div>
+        <div class="ing-haupt">
+          <div class="ing-karten">
+            <div class="ing-karte"><div class="w">23</div><div class="l">Einsteller</div></div>
+            <div class="ing-karte"><div class="w">28</div><div class="l">Pferde</div></div>
+            <div class="ing-karte"><div class="w">2</div><div class="l">Wünsche offen</div></div>
+          </div>
+          <div class="hinw w">
+            <strong>Änderungswünsche — 2 offen.</strong> Nr. 7 Falko: Raufutter auf 150 ·
+            Nr. 12 Wolke: Zeit am Selektionstor auf 07:00–11:00
+          </div>
+          <div class="hinw k">
+            <strong>Auffällig — 3 Tiere.</strong> Nora, Emmi und Tarik wurden in den
+            letzten 12 Stunden bei keiner Station erkannt. Transponderfehler?
+          </div>
+          <table class="itab">
+            <thead><tr><th>Pferd</th><th>Raufutter</th><th>Kraftfutter</th><th>Einsteller</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Falko</strong></td>
+                <td><span class="ist">46 Min</span><span class="soll">von 120</span></td>
+                <td><span class="ist">0.330 kg</span><span class="soll">von 0.790</span></td>
+                <td>Anna Berger</td><td><span class="plakette p-gut">Aktiv</span></td></tr>
+              <tr><td><strong>Wolke</strong></td>
+                <td><span class="ist">6 Min</span><span class="soll">von 90</span></td>
+                <td><span class="ist">1.815 kg</span><span class="soll">von 3.990</span></td>
+                <td>Sabine Reiter<br><span class="soll">+ 1 weitere</span></td>
+                <td><span class="plakette p-warn">Rückstand</span></td></tr>
+              <tr><td><strong>Cosmo</strong></td>
+                <td><span class="ist">0 Min</span><span class="soll">von 120</span></td>
+                <td><span class="ist">0.000 kg</span><span class="soll">von 0.000</span></td>
+                <td>—</td><td><span class="plakette p-krit">Nicht geholt</span></td></tr>
+              <tr><td><strong>Tarik</strong></td>
+                <td><span class="ist">0 Min</span><span class="soll">von 180</span></td>
+                <td><span class="ist">0.000 kg</span><span class="soll">von 2.000</span></td>
+                <td>—</td><td><span class="plakette p-neu">Nicht überwacht</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div></div>
+      <figcaption>Übersicht und Monitor · seitlich schiebbar</figcaption>
+    </figure>
+
+  </section>
+
+  <hr class="trenn">
+
+  <!-- ============ Voraussetzungen ============ -->
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Für Ihren Stall</p>
+      <h2>Was Sie dafür brauchen.</h2>
+    </div>
+
+    <dl class="fakten">
+      <div class="faktum"><dt>Anlage</dt>
+        <dd><strong>Ein HIT-Aktivstall von Wasserbauer.</strong> Nur dafür ist es
+          gebaut und erprobt. Ob sich Anlagen anderer Hersteller ähnlich auslesen
+          lassen, weiß ich nicht — untersucht wurde es nicht.</dd></div>
+      <div class="faktum"><dt>Fütterungsrechner</dt>
+        <dd>Ein neuerer HOCO. Er gibt seine Daten selbst heraus — vielen
+          Betrieben ist das nie aufgefallen. <strong>Ob Ihrer dazugehört, finde
+          ich in einer Viertelstunde heraus.</strong></dd></div>
+      <div class="faktum"><dt>Server</dt>
+        <dd>Ein Raspberry Pi genügt. Er muss nur im selben Netzwerk hängen wie
+          der Fütterungsrechner.</dd></div>
+      <div class="faktum"><dt>Website</dt>
+        <dd>Optional, für die Pferdeseiten. Läuft auf der Hofwebsite mit, falls
+          Sie WordPress nutzen. Keine zweite Adresse, kein zweiter Anbieter.</dd></div>
+      <div class="faktum"><dt>Chat</dt>
+        <dd>Optional, falls die Zahlen auch per Nachricht abrufbar sein sollen.</dd></div>
+    </dl>
+
+    <div class="merk gut">
+      <h3>Kein Risiko für den laufenden Betrieb</h3>
+      <p>
+        Am Fütterungsrechner wird nichts verändert. Fällt der Server aus,
+        füttert Ihre Anlage weiter wie bisher — es fehlen dann nur die Seiten
+        für die Einsteller.
+      </p>
+    </div>
+  </section>
+
+  <hr class="trenn">
+
+  <!-- ============ Vertrauen ============ -->
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Daten und Kosten</p>
+      <h2>Wer sieht was?</h2>
+    </div>
+    <dl class="fakten">
+      <div class="faktum"><dt>Einsteller</dt>
+        <dd>Ausschließlich sein eigenes Pferd. Keine anderen Tiere, keine Namen
+          anderer Einsteller.</dd></div>
+      <div class="faktum"><dt>Mitarbeiter</dt>
+        <dd>Koppelzeiten und offene Wünsche aller Pferde — keine Kontaktdaten.</dd></div>
+      <div class="faktum"><dt>Hofbüro</dt>
+        <dd>Alles. Die Oberfläche ist nur im Stallnetz erreichbar, nicht
+          öffentlich.</dd></div>
+      <div class="faktum"><dt>Sonst niemand</dt>
+        <dd>Die Daten liegen auf Ihrem Server und Ihrer Website. Keine Cloud,
+          kein Dienstleister dazwischen.</dd></div>
+    </dl>
+
+    <h3>Was es kostet</h3>
+    <table class="preise">
+      <tbody>
+        <tr><td>Server im Stallnetz</td><td>einmalig</td></tr>
+        <tr><td>Aufkleber für die Boxen</td><td>ein Blatt Papier</td></tr>
+        <tr><td>Laufender Betrieb</td><td>0 €</td></tr>
+        <tr><td>Je Pferd oder Einsteller</td><td>0 €</td></tr>
+      </tbody>
+    </table>
+    <p class="klein">
+      Es gibt kein Abo und keine Cloud, die bezahlt werden müsste — der
+      Fütterungsrechner liefert die Daten selbst, und die Website läuft ohnehin.
+    </p>
+
+  </section>
+
+  <hr class="trenn">
+
+  <!-- ============ Anhang ============ -->
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Anhang · für den, der es einrichtet</p>
+      <h2>Gibt Ihr Rechner die Daten her?</h2>
+    </div>
+    <p>
+      Das lässt sich in einer Viertelstunde selbst herausfinden — ohne dass
+      etwas installiert oder am Fütterungsrechner verstellt wird. Sie brauchen
+      nur einen Rechner im Stallnetz.
+    </p>
+
+    <h3>1 · Die Adresse des Fütterungsrechners finden</h3>
+    <p>
+      Der Rechner hängt wie jedes andere Gerät im Netz und hat eine Adresse der
+      Form <code>192.168.…</code>. Drei Wege, sie zu finden:
+    </p>
+    <ul>
+      <li>In Ihrem Router unter der Geräteliste — bei einer FritzBox unter
+        <em>Heimnetz → Netzwerk</em>. Gesucht ist ein Eintrag mit
+        <em>HOCO</em> oder <em>Wasserbauer</em> im Namen.</li>
+      <li>Am Panel selbst, in den Netzwerkeinstellungen.</li>
+      <li>Beim Wasserbauer-Service nachfragen.</li>
+    </ul>
+
+    <h3>2 · Mit FileZilla nachsehen</h3>
+    <p>
+      FileZilla ist kostenlos und gibt es für Windows und Mac
+      (<em>filezilla-project.org</em>, die Version <em>Client</em>). Nach dem
+      Start stehen oben vier Felder:
+    </p>
+    <dl class="fakten">
+      <div class="faktum"><dt>Server</dt><dd>die eben gefundene Adresse, etwa <code>192.168.1.50</code></dd></div>
+      <div class="faktum"><dt>Benutzername</dt><dd><code>anonymous</code></dd></div>
+      <div class="faktum"><dt>Passwort</dt><dd>leer lassen</dd></div>
+      <div class="faktum"><dt>Port</dt><dd><code>21</code></dd></div>
+    </dl>
+    <p>Dann auf <strong>Verbinden</strong>.</p>
+
+    <h3>3 · Was Sie sehen sollten</h3>
+    <p>
+      Rechts erscheint das Verzeichnis des Fütterungsrechners. Öffnen Sie darin
+      den Ordner <code>export</code>. Wenn dort Dateien liegen wie
+    </p>
+    <p><code>HOCO_20260819_0829.csv</code> &nbsp;·&nbsp; rund 1,5 MB &nbsp;·&nbsp; alle 30 Minuten eine neue</p>
+    <div class="merk gut">
+      <h3>Dann geht es.</h3>
+      <p>
+        Mehr braucht es nicht. Alles Weitere lässt sich daraus bauen — Sie haben
+        gerade den einzigen Punkt geprüft, an dem es scheitern kann.
+      </p>
+    </div>
+    <p class="klein">
+      Kommt keine Verbindung zustande oder ist der Ordner leer, heißt das nicht
+      zwangsläufig „geht nicht“ — manchmal muss der Export am Panel erst
+      eingeschaltet werden. Das weiß der Wasserbauer-Service.
+    </p>
+  </section>
+
+  <hr class="trenn">
+
+  <section class="abschnitt">
+    <div>
+      <p class="rubrik">Anhang · Technik</p>
+      <h2>Was der Server können muss.</h2>
+    </div>
+
+    <dl class="fakten">
+      <div class="faktum"><dt>Netzwerk</dt>
+        <dd>Er muss im selben Netz hängen wie der Fütterungsrechner. Mehr nicht
+          — kein fester Anschluss, keine Freigabe nach außen.</dd></div>
+      <div class="faktum"><dt>Python 3</dt>
+        <dd>Das Programm ist in Python geschrieben und braucht sonst fast nichts
+          — eine einzige Zusatzbibliothek.</dd></div>
+      <div class="faktum"><dt>Am einfachsten</dt>
+        <dd><strong>Home Assistant.</strong> Dort läuft es als Add-on: Installieren,
+          Adresse des Fütterungsrechners eintragen, fertig. Die Oberfläche fürs
+          Hofbüro ist gleich mit dabei.</dd></div>
+      <div class="faktum"><dt>Hardware</dt>
+        <dd>Ein Raspberry Pi genügt. Läuft in vielen Betrieben ohnehin schon
+          etwas in dieser Art, kann es dort mitlaufen.</dd></div>
+    </dl>
+
+    <h3>Und die Website?</h3>
+    <p>
+      Gebaut ist sie für <strong>WordPress</strong> — als Erweiterung, die auf
+      der vorhandenen Hofwebsite mitläuft. Andere Systeme wären denkbar, sind
+      aber <strong>noch nicht entwickelt</strong>. Wer etwas anderes einsetzt,
+      bräuchte an dieser Stelle also erst einmal jemanden.
+    </p>
+
+  </section>
+
+  <!-- ============ Schluss ============ -->
+  <footer class="abschnitt">
+    <h2>Der erste Schritt kostet nichts.</h2>
+    <p>
+      Eine Viertelstunde genügt, um nachzusehen, ob Ihr Fütterungsrechner die
+      Daten überhaupt hergibt. Danach wissen Sie, ob sich das Weiterdenken lohnt.
+    </p>
+    <p class="fuss">
+      HOCO-Abruf · Aktivstall<br>
+      <span class="klein">Alle gezeigten Bildschirme sind echt — nur mit
+      erfundenen Pferde- und Personennamen gefüllt.</span>
+    </p>
+  </footer>
+
+</div>

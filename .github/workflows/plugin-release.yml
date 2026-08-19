@@ -1,0 +1,59 @@
+# Baut aus der Plugin-Datei ein ZIP, das WordPress direkt annimmt, und haengt
+# es an die Veroeffentlichung.
+#
+# Warum ueberhaupt: Das ZIP, das GitHub von sich aus erzeugt, enthaelt einen
+# Ordner wie "hoco-abruf-1.2.3". WordPress benennt das Plugin danach - beim
+# naechsten Update entstuende ein zweiter Ordner. Dieses ZIP enthaelt
+# "hoco-pferdeseiten/hoco-pferdeseiten.php" und passt damit ueber die
+# bestehende Installation.
+#
+# Ausgeloest wird der Lauf von einem Tag der Form v0.20.0. Die Versionsnummer
+# im Tag muss zu der im Dateikopf passen - sonst bricht der Lauf ab, statt eine
+# Veroeffentlichung zu erzeugen, die sich nie als Update meldet.
+
+name: Plugin-ZIP veröffentlichen
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versionsnummern vergleichen
+        id: version
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          datei=$(grep -m1 '^Version:' hoco-pferdeseiten.php | sed 's/Version:[[:space:]]*//' | tr -d '\r')
+          echo "Tag: $tag, Dateikopf: $datei"
+          if [ "$tag" != "$datei" ]; then
+            echo "::error::Tag ($tag) und Version im Dateikopf ($datei) stimmen nicht überein."
+            exit 1
+          fi
+          echo "version=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: ZIP bauen
+        run: |
+          set -euo pipefail
+          mkdir -p bau/hoco-pferdeseiten
+          cp hoco-pferdeseiten.php bau/hoco-pferdeseiten/
+          cp LICENSE bau/hoco-pferdeseiten/ 2>/dev/null || true
+          cd bau
+          zip -r ../hoco-pferdeseiten.zip hoco-pferdeseiten
+          cd ..
+          unzip -l hoco-pferdeseiten.zip
+
+      - name: An die Veröffentlichung hängen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: hoco-pferdeseiten.zip
+          generate_release_notes: true

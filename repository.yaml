@@ -1,0 +1,6 @@
+# Kennung dieses Ordners als Home-Assistant-Add-on-Repository.
+# In Home Assistant: Einstellungen → Add-ons → Add-on-Store → ⋮ →
+# „Repositories“ → die Adresse dieses Repositorys eintragen.
+name: HOCO-Abruf
+url: https://github.com/jjuuzzii/hoco-abruf
+maintainer: jjuuzzii

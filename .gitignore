@@ -1,0 +1,46 @@
+# Weisse Liste: Erst wird alles ausgeschlossen, danach wird einzeln
+# freigegeben. So kann auch ein versehentliches "git add -A" nichts
+# einsammeln, was nicht ausdruecklich hier steht.
+*
+
+# --- Freigegeben ---------------------------------------------------------
+!.gitignore
+!.gitattributes
+!README.md
+!LICENSE
+!repository.yaml
+!STAND.md
+
+# Home-Assistant-Add-on
+!addon/
+!addon/**
+
+# WordPress-Plugin (Geheimnis steht in der Datenbank/wp-config.php, nicht hier)
+!hoco-pferdeseiten.php
+
+# Anleitungen fuer Staelle und Einsteller - als Quelle (HTML), nicht als PDF.
+# Die PDFs entstehen daraus mit WeasyPrint; sie gehoeren zum Aushang im
+# Betrieb, nicht ins Repository.
+!dokumentation/
+!dokumentation/**
+dokumentation/*.pdf
+
+# Bauanweisung fuer die Plugin-ZIP (GitHub Actions)
+!.github/
+!.github/**
+
+# --- Auch innerhalb der freigegebenen Ordner ausgeschlossen --------------
+__pycache__/
+*.pyc
+
+# --- Bewusst draussen (Erklaerung im README) -----------------------------
+# daten/            Einstellerliste, Zuordnung, Zugangsschluessel
+# logs/             Laufprotokolle
+# ausgabe/          erzeugte Seiten und Aufkleber mit echten Kennungen
+# panel-seiten/     Bildschirmaufnahmen aus dem Stall
+# skripte/          Werkstatt, teils mit Betriebsdaten
+# flyer/            Aushang mit der Bot-Rufnummer
+# addon-sicherung-0.19.1-mit-ki/   Sicherung des alten Wegs
+# Mobilgeraet.conf  WireGuard-Schluessel
+# WHATSAPP-BOT.md   enthaelt die Bot-Rufnummer
+# *.zip             Bau-Ergebnis, wird lokal erzeugt

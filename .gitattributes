@@ -1,0 +1,13 @@
+# Im Container laeuft alles unter Linux. Ein run.sh mit CRLF laesst den
+# Add-on-Start scheitern ("no such file or directory"), deshalb werden
+# Zeilenenden hier festgenagelt - unabhaengig von core.autocrlf auf dem
+# jeweiligen Rechner.
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.py   text eol=lf
+*.yaml text eol=lf
+
+*.pdf binary
+*.png binary
+*.zip binary
