@@ -7,17 +7,9 @@ den Betreiber zwischen Add-on-Optionen und Panel hin und her zu schicken,
 fuehrt eine Ansicht im Panel durch alle Werte - und prueft jeden einzeln, bevor
 er stehenbleibt.
 
-Der Kniff: Das Add-on schreibt seine eigenen Optionen ueber die Supervisor-API
-(POST /addons/self/options). Was hier gespeichert wird, steht danach auch im
-Add-on-UI von Home Assistant - es gibt keinen zweiten Satz Einstellungen, der
-auseinanderlaufen koennte.
-
-Uebernommen werden die Werte erst nach einem Neustart des Add-ons, weil sie als
-Umgebungsvariablen ankommen (run.sh). Deshalb der Neustart-Knopf am Ende.
-
-Geht der Schreibzugriff nicht (aeltere Supervisor-Version, Berechtigung
-entzogen), bleibt die Ansicht trotzdem nuetzlich: sie prueft die Verbindungen
-und zeigt die Werte zum Abschreiben. Sie ist nie eine Sackgasse.
+Seit 0.41.0 ist das Panel der einzige Ort dafuer: Gespeichert wird in
+/data/konfig.json (siehe konfig.py), und die Werte gelten sofort - kein
+Neustart, keine zweite Oberflaeche in den Add-on-Optionen.
 """
 import json
 import os
@@ -26,13 +18,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from . import hoco, wunsch
+from . import hoco, konfig, wunsch
 
 DATA_DIR = "/data"
 DATEI = os.path.join(DATA_DIR, "einrichtung.json")
 
 SUPERVISOR = "http://supervisor"
-TOKEN = os.environ.get("SUPERVISOR_TOKEN", "")
+TOKEN = os.environ.get("SUPERVISOR_TOKEN", "")   # nur noch fuer die WhatsApp-Probe
 
 # Kennung, Beschriftung, Hilfetext, Pflichtfeld?, Folge wenn es fehlt
 #
@@ -95,66 +87,33 @@ UMGEBUNG = {
 }
 
 
-# ------------------------------------------------------------ Supervisor-API
-def _api(pfad, daten=None, methode=None, zeit=20):
-    """Ruft die Supervisor-API auf und gibt den 'data'-Teil zurueck.
-
-    Wirft bei Fehlern - die Ansicht faengt sie und zeigt den Grund an, statt
-    stumm "hat nicht geklappt" zu sagen.
-    """
-    if not TOKEN:
-        raise RuntimeError("SUPERVISOR_TOKEN fehlt - ist hassio_api aktiv?")
-    body = json.dumps(daten).encode("utf-8") if daten is not None else None
-    req = urllib.request.Request(
-        SUPERVISOR + pfad, data=body, method=methode or ("POST" if body else "GET"),
-        headers={"Authorization": "Bearer " + TOKEN,
-                 "Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=zeit) as r:
-            antwort = json.loads(r.read().decode("utf-8") or "{}")
-    except urllib.error.HTTPError as e:
-        grund = ""
-        try:
-            grund = json.loads(e.read().decode("utf-8")).get("message", "")
-        except Exception:
-            pass
-        raise RuntimeError("Supervisor antwortet %s%s"
-                           % (e.code, (": " + grund) if grund else ""))
-    return antwort.get("data", antwort)
-
-
+# --------------------------------------------------------------- Speichern
 def optionen():
-    """Die Optionen, wie sie gerade im Add-on-UI stehen."""
-    try:
-        return dict(_api("/addons/self/info").get("options") or {})
-    except Exception:
-        return {}
+    """Der aktuelle Stand aller Einstellungen."""
+    return konfig.alle()
 
 
 def schreibbar():
-    """Darf das Add-on seine Optionen selbst setzen? -> (ja, Grund)"""
+    """Kann gespeichert werden? -> (ja, Grund)
+
+    Seit 0.41.0 schreibt das Add-on in eine eigene Datei unter /data. Das kann
+    nur an einem vollen oder schreibgeschuetzten Datentraeger scheitern - der
+    Supervisor ist dafuer nicht mehr noetig.
+    """
     try:
-        _api("/addons/self/info")
+        os.makedirs(konfig.DATA_DIR, exist_ok=True)
+        probe = os.path.join(konfig.DATA_DIR, ".schreibprobe")
+        with open(probe, "w", encoding="utf-8") as f:
+            f.write("ok")
+        os.remove(probe)
         return True, ""
     except Exception as e:
         return False, str(e)
 
 
 def speichern(werte):
-    """Schreibt die Optionen zurueck ins Add-on.
-
-    Bewusst zusammengefuehrt statt ersetzt: Optionen, die diese Ansicht gar
-    nicht kennt (Takt, Abo, Log-Stufe), sollen unveraendert stehenbleiben.
-    """
-    alle = optionen()
-    alle.update({k: v for k, v in werte.items() if v is not None})
-    _api("/addons/self/options", {"options": alle})
-    return alle
-
-
-def neustart():
-    """Startet das Add-on neu, damit run.sh die neuen Werte durchreicht."""
-    _api("/addons/self/restart", {})
+    """Uebernimmt die Werte. Sie gelten sofort, ohne Neustart."""
+    return konfig.speichern(werte)
 
 
 # ------------------------------------------------------------------ Zustand
@@ -187,9 +146,9 @@ def abschliessen(ja=True):
 
 
 def laufende_werte():
-    """Was im laufenden Add-on tatsaechlich ankommt (nicht das UI-Formular)."""
-    return {kennung: os.environ.get(name, "").strip()
-            for kennung, name in UMGEBUNG.items()}
+    """Die Werte, mit denen das Add-on gerade arbeitet."""
+    alle = konfig.alle()
+    return {kennung: alle.get(kennung, "") for kennung in UMGEBUNG}
 
 
 def fehlend():

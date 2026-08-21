@@ -9,8 +9,9 @@
 #   * an die Website (WordPress-Plugin „HOCO-Pferdeseiten"),
 #   * ins Hofbüro über eine Oberfläche in der Seitenleiste (Ingress).
 #
-# Beim ersten Start führt eine Ersteinrichtung im Panel durch alle Werte und
-# prüft jede Verbindung einzeln. Von Hand ausfüllen muss man hier nichts.
+# Eingerichtet wird im Panel des Add-ons: eine Ansicht führt durch alle Werte
+# und prüft jede Verbindung einzeln. Hier in Home Assistant gibt es deshalb
+# keine Konfiguration mehr.
 #
 # Seit 0.20.0 kommen die Daten ausschließlich über den FTP-Auszug. Das Abfahren
 # des Bedienbildschirms samt Modell-Auslesung ist ausgebaut (siehe STAND.md).
@@ -19,7 +20,7 @@
 # echte Befehle (/anmelden, /abruf, /hilfe) und - kurz nach /anmelden - auf die
 # Pferd-Antwort. Auf alles andere schweigt er.
 name: HOCO-Abruf
-version: "0.40.3"
+version: "0.41.1"
 slug: fuetterungsabruf
 description: >-
   Fütterungsdaten vom Wasserbauer-HOCO-Rechner: WhatsApp-Bot für die Einsteller (/anmelden mit
@@ -47,53 +48,16 @@ map:
 # Benachrichtigung). SUPERVISOR_TOKEN stellt der Supervisor bereit.
 homeassistant_api: true
 
-# Zugriff auf die Supervisor-API. Nur für „addons/self": die Ersteinrichtung
-# im Panel schreibt die hier stehenden Optionen selbst, damit man zum
-# Einrichten nicht zwischen zwei Oberflächen hin und her springen muss.
-hassio_api: true
 
-options:
-  # Name des Betriebs. Steht im Kopf der Pferdeseiten, in den
-  # WhatsApp-Vorlagen und in der Fußzeile des Panels.
-  stall_name: ""
-  # FTP des Fütterungsrechners. Nur die Adresse muss ein anderer Betrieb
-  # tauschen; leer lassen heißt anonym.
-  hoco_host: "172.16.1.49"
-  hoco_verzeichnis: "/export"
-  hoco_benutzer: ""
-  hoco_passwort: ""
-  # Aktionierbare Benachrichtigung „bestätigen/ablehnen" an diesen Notify-Dienst.
-  # Ab 0.14.0 geht auch die Morgenmeldung (nicht erkannte Tiere) hierhin; Zeit,
-  # Wochentage, Umfang und ein abweichender Empfänger stehen im Add-on selbst
-  # unter „Fütterungspläne → Morgenmeldung“.
-  hofbuero_notify: notify.mobile_app_iphone
-  # Wie oft nachgesehen wird, ob der Rechner eine neue Datei geschrieben hat.
-  # Er schreibt etwa alle 30 Minuten; 5 Minuten heißt also: die Zahlen sind nie
-  # älter als der Schreibabstand plus fünf Minuten. Nachsehen kostet nichts
-  # (ein FTP-LIST), gearbeitet wird nur bei einem neuen Dateinamen.
-  abruf_takt_minuten: 5
-  # Website (WordPress-Plugin): Link-Basis, Push-Endpunkt, geheimer Schluessel.
-  # Eigene Domain eintragen, z. B.
-  #   website_link: "https://beispielhof.de/fuetterung/?k="
-  #   website_api:  "https://beispielhof.de/wp-json/fuetterung/v1"
-  # Der Schluessel steht in der wp-config.php des Servers (FUETTERUNG_SECRET)
-  # und wird hier im Add-on-UI eingetragen - nicht in dieser Datei.
-  website_link: ""
-  website_api: ""
-  website_secret: ""
-  log_stufe: info
-
-schema:
-  stall_name: str?
-  hoco_host: str?
-  hoco_verzeichnis: str?
-  hoco_benutzer: str?
-  hoco_passwort: password?
-  hofbuero_notify: str?
-  abruf_takt_minuten: int(1,60)?
-  website_link: str?
-  website_api: str?
-  website_secret: password?
-  log_stufe: list(debug|info|warning|error)?
+# Keine Optionen mehr an dieser Stelle.
+#
+# Bis 0.40.x standen die Einstellungen hier und kamen als Umgebungsvariablen im
+# Add-on an. Das hiess zwei Oberflaechen fuer dieselbe Sache, und jede Aenderung
+# brauchte einen Neustart. Seit 0.41.0 fuehrt das Add-on sie selbst
+# (/data/konfig.json) und die Ersteinrichtung im Panel schreibt sie - dort
+# gelten sie sofort.
+#
+# Wer von 0.40.x kommt, muss nichts tun: die Werte sind beim ersten Start von
+# 0.41.0 automatisch uebernommen worden.
 
 backup: hot

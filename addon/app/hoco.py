@@ -41,7 +41,7 @@ import io
 import os
 import re
 
-from . import einheiten, pruefung, rueckstand
+from . import einheiten, konfig, pruefung, rueckstand
 
 # --- FTP ------------------------------------------------------------------
 # Erreichbar, seit die FritzBox einen WireGuard-Tunnel ins Wasserbauer-Netz
@@ -49,10 +49,17 @@ from . import einheiten, pruefung, rueckstand
 # eigenes VPN. Der Rechner blockt ICMP - ein fehlgeschlagener Ping sagt nichts.
 # Alles ueber Optionen einstellbar, damit ein anderer Betrieb nur die Adresse
 # tauschen muss.
-FTP_HOST = os.environ.get("HOCO_HOST", "").strip() or "172.16.1.49"
-FTP_VERZEICHNIS = os.environ.get("HOCO_VERZEICHNIS", "").strip() or "/export"
-FTP_BENUTZER = os.environ.get("HOCO_BENUTZER", "").strip() or "anonymous"
-FTP_PASSWORT = os.environ.get("HOCO_PASSWORT", "").strip() or "anonymous@"
+def ftp_zugang(host=None, verzeichnis=None, benutzer=None, passwort=None):
+    """Die vier FTP-Angaben - uebergebene Werte haben Vorrang.
+
+    Wird bei jedem Aufruf frisch aus der Konfiguration gelesen, damit eine
+    Aenderung im Panel sofort greift. Leerer Benutzer heisst anonym; so gibt
+    der Rechner im Normalfall heraus.
+    """
+    return (host or konfig.wert("hoco_host"),
+            verzeichnis or konfig.wert("hoco_verzeichnis", "/export"),
+            benutzer or konfig.wert("hoco_benutzer") or "anonymous",
+            passwort or konfig.wert("hoco_passwort") or "anonymous@")
 
 # Ab wann gilt der juengste Auszug als zu alt? Der Rechner schreibt alle 30
 # Minuten; drei ausgelassene Male sind kein Zufall mehr, sondern eine Stoerung.
@@ -161,9 +168,11 @@ def _zahl(text):
 # --------------------------------------------------------------------------
 # FTP
 # --------------------------------------------------------------------------
-def dateiliste(host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
-               benutzer=FTP_BENUTZER, passwort=FTP_PASSWORT, zeit=15):
+def dateiliste(host=None, verzeichnis=None,
+               benutzer=None, passwort=None, zeit=15):
     """Alle Auszuege im Verzeichnis, aelteste zuerst."""
+    host, verzeichnis, benutzer, passwort = ftp_zugang(
+        host, verzeichnis, benutzer, passwort)
     ftp = ftplib.FTP()
     try:
         ftp.connect(host, 21, timeout=zeit)
@@ -178,9 +187,11 @@ def dateiliste(host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
             pass
 
 
-def datei_holen(name, host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
-                benutzer=FTP_BENUTZER, passwort=FTP_PASSWORT, zeit=20):
+def datei_holen(name, host=None, verzeichnis=None,
+                benutzer=None, passwort=None, zeit=20):
     """Eine bestimmte Datei laden -> Rohtext."""
+    host, verzeichnis, benutzer, passwort = ftp_zugang(
+        host, verzeichnis, benutzer, passwort)
     ftp = ftplib.FTP()
     try:
         ftp.connect(host, 21, timeout=zeit)
@@ -196,14 +207,16 @@ def datei_holen(name, host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
     return puffer.getvalue().decode("cp1252", "replace")
 
 
-def neueste_datei(host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
-                  benutzer=FTP_BENUTZER, passwort=FTP_PASSWORT, zeit=20):
+def neueste_datei(host=None, verzeichnis=None,
+                  benutzer=None, passwort=None, zeit=20):
     """Juengsten Auszug holen -> (dateiname, rohtext).
 
     Sortiert wird ueber den Namen, nicht ueber die FTP-Zeitstempel: im Namen
     steht die Ortszeit des Rechners, im Zeitstempel UTC. Beides zu mischen
     haette zur vollen Stunde die falsche Datei gewaehlt.
     """
+    host, verzeichnis, benutzer, passwort = ftp_zugang(
+        host, verzeichnis, benutzer, passwort)
     ftp = ftplib.FTP()
     try:
         ftp.connect(host, 21, timeout=zeit)
@@ -223,8 +236,8 @@ def neueste_datei(host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
     return name, puffer.getvalue().decode("cp1252", "replace")
 
 
-def neuester_name(host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
-                  benutzer=FTP_BENUTZER, passwort=FTP_PASSWORT, zeit=15):
+def neuester_name(host=None, verzeichnis=None,
+                  benutzer=None, passwort=None, zeit=15):
     """Nur nachsehen, wie der juengste Auszug heisst - ohne ihn zu laden.
 
     Das ist die ganze Terminplanung: regelmaessig hier nachfragen und nur dann
@@ -232,6 +245,8 @@ def neuester_name(host=FTP_HOST, verzeichnis=FTP_VERZEICHNIS,
     Rechner schreibt ohnehin nur alle 30 Minuten. Feste Abrufzeiten waren nur
     noetig, solange jeder Lauf das Panel belegte und Geld kostete.
     """
+    host, verzeichnis, benutzer, passwort = ftp_zugang(
+        host, verzeichnis, benutzer, passwort)
     ftp = ftplib.FTP()
     try:
         ftp.connect(host, 21, timeout=zeit)

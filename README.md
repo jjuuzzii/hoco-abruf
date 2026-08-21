@@ -51,7 +51,8 @@ nur dafür genutzten Rufnummer.
    Repositories** und die Adresse dieses Repositorys eintragen.
 2. „HOCO-Abruf" installieren und starten.
 3. Das Panel in der Seitenleiste öffnen. Solange etwas fehlt, steht die
-   **Ersteinrichtung** ganz oben.
+   **Ersteinrichtung** ganz oben; sobald alles eingetragen ist, verschwindet
+   sie aus der Seitenleiste und bleibt über die Einstellungen erreichbar.
 
 ### 2. Plugin installieren
 
@@ -70,14 +71,28 @@ Spätere Fassungen meldet das Plugin selbst — siehe unten.
 
 ### 3. Beides verbinden
 
-Die drei Werte aus Schritt 2 in der Ersteinrichtung des Add-ons eintragen,
-speichern, neu starten. Jeder Schritt hat dort einen Prüfknopf: FTP-Verbindung,
+Die drei Werte aus Schritt 2 in der Ersteinrichtung des Add-ons eintragen und
+speichern — fertig. Jeder Schritt hat dort einen Prüfknopf: FTP-Verbindung,
 Testmeldung ins Hofbüro, WhatsApp-Dienst und Website werden einzeln geprüft und
 sagen im Fehlerfall, woran es liegt.
 
-Das Add-on schreibt seine Einstellungen dabei selbst in die Add-on-Konfiguration
-(über die Supervisor-API). Es gibt also keinen zweiten Satz Einstellungen, der
-auseinanderlaufen könnte.
+## Einstellungen
+
+**Das Add-on hat in Home Assistant keine Konfiguration.** Alles wird im Panel
+unter *Ersteinrichtung* eingetragen und liegt in `/data/konfig.json` — eine
+Oberfläche statt zwei, und Änderungen gelten **sofort** statt erst nach einem
+Neustart.
+
+| Einstellung | Bedeutung |
+| --- | --- |
+| Name des Betriebs | steht im Kopf der Pferdeseiten, in den WhatsApp-Texten und im Panel |
+| Adresse und Verzeichnis | FTP des Fütterungsrechners; leerer Benutzer heißt anonym |
+| FTP-Benutzer und -Kennwort | nur nötig, wenn der Rechner nicht anonym herausgibt |
+| Benachrichtigung ins Hofbüro | Notify-Dienst für Freigaben und Morgenmeldung |
+| Schnittstelle, Link-Basis, Geheimnis | die drei Werte aus der Einrichtung des Plugins |
+
+Fütterungspläne, Zeiten der Morgenmeldung und die Zuordnung Rufnummer ↔ Pferd
+werden ebenfalls im Panel gepflegt.
 
 ## Aktualisieren
 
@@ -117,8 +132,10 @@ installierte Seite steht damit nie offen.
 ## Umstieg von „Fütterungsabruf" (vor 0.40.0)
 
 * **Add-on:** einfach aktualisieren. Die technische Kennung ist unverändert,
-  Zuordnungen, Fütterungspläne und Vorlagen bleiben stehen. Neu ist die Option
-  `stall_name`.
+  Zuordnungen, Fütterungspläne und Vorlagen bleiben stehen. Seit 0.41.0 wandern
+  die Einstellungen beim ersten Start aus der Add-on-Konfiguration ins Add-on
+  selbst; danach ist die Konfiguration in Home Assistant leer. Von Hand ist
+  nichts zu tun.
 * **Plugin:** Die Datei heißt jetzt `hoco-pferdeseiten.php`. WordPress sieht
   darin ein anderes Plugin — **erst das alte deaktivieren**, dann das neue
   hochladen und aktivieren, sonst gibt es doppelte Funktionsnamen. Die Daten

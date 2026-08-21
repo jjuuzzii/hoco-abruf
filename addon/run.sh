@@ -1,32 +1,22 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 #
-# Start des HOCO-Abruf-Add-ons. Optionen holen, als Umgebungsvariablen
-# weiterreichen, dann den Bot ausführen (der startet WhatsApp-Empfang,
-# Weboberfläche und den täglichen Datenabruf).
+# Start des HOCO-Abruf-Add-ons.
+#
+# Hier wird nichts mehr aus der Add-on-Konfiguration geholt: seit 0.41.0 fuehrt
+# das Add-on seine Einstellungen selbst (/data/konfig.json) und liest sie bei
+# jedem Zugriff frisch. Eine Aenderung im Panel gilt damit sofort - frueher
+# musste dafuer das Add-on neu starten, weil Umgebungsvariablen sich zur
+# Laufzeit nicht aendern.
 set -euo pipefail
 
-export ABRUF_HOFBUERO_NOTIFY="$(bashio::config 'hofbuero_notify' 'notify.mobile_app_iphone')"
-export ABRUF_TAKT_MINUTEN="$(bashio::config 'abruf_takt_minuten' '5')"
-export ABRUF_LOG_STUFE="$(bashio::config 'log_stufe' 'info')"
-export STALL_NAME="$(bashio::config 'stall_name' '')"
-
-export HOCO_HOST="$(bashio::config 'hoco_host' '')"
-export HOCO_VERZEICHNIS="$(bashio::config 'hoco_verzeichnis' '')"
-export HOCO_BENUTZER="$(bashio::config 'hoco_benutzer' '')"
-export HOCO_PASSWORT="$(bashio::config 'hoco_passwort' '')"
-
-# Website (WordPress-Plugin): Link-Basis, Push-Endpunkt, geheimer Schluessel.
-export WEBSITE_LINK="$(bashio::config 'website_link' '')"
-export WEBSITE_API="$(bashio::config 'website_api' '')"
-export WEBSITE_SECRET="$(bashio::config 'website_secret' '')"
-
-# Ingress-Port (die Weboberfläche lauscht darauf; der Supervisor proxyt ihn).
+# Der Ingress-Port ist keine Einstellung, sondern eine Eigenschaft des Add-ons
+# (config.yaml). Er gehoert deshalb weiter hierher.
 export ABRUF_INGRESS_PORT="8099"
 
-# SUPERVISOR_TOKEN kommt vom Supervisor selbst (homeassistant_api: true).
+# SUPERVISOR_TOKEN stellt der Supervisor bereit (homeassistant_api: true).
 
-bashio::log.info "HOCO-Abruf startet – Auszug von ${HOCO_HOST:-<nicht gesetzt>}, Freigabe an ${ABRUF_HOFBUERO_NOTIFY}."
+bashio::log.info "HOCO-Abruf startet – Einstellungen im Add-on unter „Ersteinrichtung“."
 
 cd /opt/fuetterungsabruf
 exec python3 -m app.bot

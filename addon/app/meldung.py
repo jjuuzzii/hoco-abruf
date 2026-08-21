@@ -22,6 +22,8 @@ Zwei Eigenheiten, die aus dem Betrieb kommen:
 """
 import json
 import os
+
+from . import konfig
 import time
 
 from . import texte, zeitplan
@@ -31,7 +33,9 @@ DATEI = os.path.join(DATA_DIR, "meldung.json")
 
 # Empfaenger aus den Add-on-Einstellungen - derselbe Dienst, der auch die
 # Freigabe-Anfragen bekommt. In der Oberflaeche ist er je Meldung ueberschreibbar.
-STANDARD_ZIEL = os.environ.get("ABRUF_HOFBUERO_NOTIFY", "notify.mobile_app_iphone")
+def standard_ziel():
+    """Notify-Dienst aus den Einstellungen - bei jedem Aufruf frisch."""
+    return konfig.wert("hofbuero_notify", "notify.mobile_app_iphone")
 
 # Was soll gemeldet werden? Der Vorgabewert ist bewusst der engste: die
 # gerechneten Rueckstaende betreffen an manchen Tagen das halbe Stallgebaeude

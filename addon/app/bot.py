@@ -10,7 +10,8 @@ Einsteller:
   /abmelden           -> Verknuepfung loeschen
 
 Website (WP-Plugin): der Bot schiebt Schluessel (beim Start) und Tagesdaten
-(nach jedem Abruf) automatisch an WEBSITE_API. Links = WEBSITE_LINK + Schluessel.
+(nach jedem Abruf) automatisch an die Website. Links = Link-Basis + Schluessel.
+Alle Einstellungen stehen in /data/konfig.json (siehe konfig.py).
 Schluessel je Pferd: /share/fuetterungsabruf/schluessel.json.
 """
 import os
@@ -28,18 +29,29 @@ import urllib.parse
 
 import websocket  # websocket-client
 
-from . import bestand, abruf, hoco, meldung, rueckstand, web, texte, wunsch
+from . import (bestand, abruf, hoco, konfig, meldung, rueckstand, web,
+               texte, wunsch)
 from .texte import T
 
 CORE_HTTP = "http://supervisor/core"
 CORE_WS = "ws://supervisor/core/websocket"
 TOKEN = os.environ.get("SUPERVISOR_TOKEN", "")
-HOFBUERO = meldung.STANDARD_ZIEL      # Dienst aus den Add-on-Einstellungen
+# Einstellungen werden bei jedem Zugriff frisch gelesen (siehe konfig.py) -
+# als Modulkonstante gebunden waeren sie der Stand vom Programmstart, und eine
+# Aenderung im Panel braeuchte wieder einen Neustart.
+def hofbuero():
+    """Notify-Dienst fuer Freigaben und Morgenmeldung."""
+    return konfig.wert("hofbuero_notify", "notify.mobile_app_iphone")
 
-# Website-Anbindung
-WEBSITE_LINK = os.environ.get("WEBSITE_LINK", "").strip()      # z.B. https://perwein-hofgut.de/fuetterung/?k=
-WEBSITE_API = os.environ.get("WEBSITE_API", "").strip()        # z.B. https://perwein-hofgut.de/wp-json/fuetterung/v1
-WEBSITE_SECRET = os.environ.get("WEBSITE_SECRET", "").strip()
+
+def website_link():
+    """Link-Basis der Pferdeseiten, z.B. https://beispielhof.de/fuetterung/?k="""
+    return konfig.wert("website_link")
+
+
+def website_zugang():
+    """(Schnittstelle, Geheimnis) der Website."""
+    return konfig.wert("website_api"), konfig.wert("website_secret")
 BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
 
 
@@ -238,9 +250,10 @@ class Bot:
 
     # ---------- Website-Push ----------
     def _web_post(self, pfad, payload):
-        if not (WEBSITE_API and WEBSITE_SECRET):
+        api, geheim = website_zugang()
+        if not (api and geheim):
             return None
-        url = WEBSITE_API + pfad + "?key=" + urllib.parse.quote(WEBSITE_SECRET)
+        url = api + pfad + "?key=" + urllib.parse.quote(geheim)
         body = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=body, method="POST",
             headers={"Content-Type": "application/json", "User-Agent": BROWSER_UA})
@@ -375,12 +388,14 @@ class Bot:
 
     def _link(self, nr):
         schl = self.keys.get(nr)
-        return (WEBSITE_LINK + schl) if (schl and WEBSITE_LINK) else None
+        basis = website_link()
+        return (basis + schl) if (schl and basis) else None
 
     def mitarbeiter_link(self):
         """Adresse der Stallseite - dieselbe Form wie eine Pferdeseite."""
         code = getattr(self, "mitarbeiter", "")
-        return (WEBSITE_LINK + code) if (code and WEBSITE_LINK) else None
+        basis = website_link()
+        return (basis + code) if (code and basis) else None
 
     # ---------- Namen & Codes (fuer das Ingress) ----------
     @staticmethod
@@ -473,10 +488,11 @@ class Bot:
 
     # ---------- Hofbuero-Benachrichtigung ----------
     def _hofbuero_freigabe(self, nummer, nrs):
-        if "." in HOFBUERO:
-            domain, service = HOFBUERO.split(".", 1)
+        ziel_dienst = hofbuero()
+        if "." in ziel_dienst:
+            domain, service = ziel_dienst.split(".", 1)
         else:
-            domain, service = "notify", HOFBUERO
+            domain, service = "notify", ziel_dienst
         namen = ", ".join(PANEL.get(nr, str(nr)) for nr in nrs)
         self._post(domain, service, {
             "title": "HOCO-Abruf: Freigabe noetig",
@@ -492,7 +508,7 @@ class Bot:
 
     def _benachrichtigen(self, ziel, titel, text, tag):
         """Eine Meldung aufs Telefon. ziel leer -> Dienst aus den Einstellungen."""
-        dienst = (ziel or HOFBUERO).strip()
+        dienst = (ziel or hofbuero()).strip()
         if "." in dienst:
             domain, service = dienst.split(".", 1)
         else:
@@ -517,7 +533,7 @@ class Bot:
 
         Geaendert wird am Fuetterungsrechner nichts (siehe wunsch.py).
         """
-        offen_alle, fehler = wunsch.laden(WEBSITE_API, WEBSITE_SECRET)
+        offen_alle, fehler = wunsch.laden(*website_zugang())
         if fehler:
             raise RuntimeError(fehler)     # der Aufrufer soll es sagen koennen
         if not offen_alle:
@@ -530,11 +546,11 @@ class Bot:
             return []
         erledigt, offen, zurueck_warn, zurueck_still = wunsch.pruefen(offen_alle, pferde)
         for w in erledigt:
-            if wunsch.abhaken(WEBSITE_API, WEBSITE_SECRET, w):
+            if wunsch.abhaken(*website_zugang(), w):
                 log("Wunsch eingetragen: %s" % wunsch.text(w))
         # Zurueckgenommen und nichts passiert: einfach schliessen.
         for w in zurueck_still:
-            wunsch.abhaken(WEBSITE_API, WEBSITE_SECRET, w, status="geschlossen")
+            wunsch.abhaken(*website_zugang(), w, status="geschlossen")
         # Zurueckgenommen, aber schon eingetragen: das muss auffallen.
         for w in zurueck_warn:
             gemeldet = self.store.setdefault("wunsch_gewarnt", {})
@@ -545,7 +561,7 @@ class Bot:
             log("WARNUNG: " + wunsch.warntext(w))
             self._benachrichtigen(None, "Wunsch zurueckgenommen",
                                   wunsch.warntext(w), "wunsch")
-            wunsch.abhaken(WEBSITE_API, WEBSITE_SECRET, w, status="geschlossen")
+            wunsch.abhaken(*website_zugang(), w, status="geschlossen")
         self.wuensche = offen
         if melden and offen:
             gemeldet = self.store.setdefault("wunsch_gemeldet", {})
@@ -578,7 +594,7 @@ class Bot:
         """
         for w in (self.wuensche or []):
             if str(w.get("id")) == str(wunsch_id):
-                if wunsch.abhaken(WEBSITE_API, WEBSITE_SECRET, w,
+                if wunsch.abhaken(*website_zugang(), w,
                                   status="abgelehnt", grund=grund):
                     self.wuensche = [x for x in self.wuensche if x is not w]
                     log("Wunsch abgelehnt (%s): %s" % (grund or "ohne Grund", wunsch.text(w)))
@@ -609,7 +625,7 @@ class Bot:
         if not treffer and not m.get("auch_ohne_befund") and anlass != "test":
             return "nichts zu melden"
         titel, text = m.nachricht(pferde, daten.get("stand", ""))
-        ziel = m.get("ziel") or HOFBUERO
+        ziel = m.get("ziel") or hofbuero()
         if self._benachrichtigen(m.get("ziel"), titel, text, "abruf_morgenmeldung") is None:
             return "Dienst %s hat nicht angenommen - siehe Protokoll" % ziel
         m.versand_merken(titel, anlass)
@@ -863,7 +879,9 @@ def _verbinden(bot):
             pass
 
 
-TAKT_S = max(60, int(os.environ.get("ABRUF_TAKT_MINUTEN") or 5) * 60)
+def takt_s():
+    """Wie oft nachgesehen wird, ob ein neuer Auszug da ist."""
+    return max(60, int(konfig.wert("abruf_takt_minuten", "5") or 5) * 60)
 
 
 def _scheduler(bot, run_abruf):
@@ -886,12 +904,12 @@ def _scheduler(bot, run_abruf):
         try:
             now = time.localtime()
             if time.time() >= naechster_blick:
-                naechster_blick = time.time() + TAKT_S
+                naechster_blick = time.time() + takt_s()
                 try:
                     name = hoco.neuester_name()
                 except Exception as e:
                     log("FTP nicht erreichbar (%s) - naechster Versuch in %d Min."
-                        % (e, TAKT_S // 60))
+                        % (e, takt_s() // 60))
                     name = ""
                 if name and name != zuletzt:
                     zuletzt = name
@@ -923,6 +941,15 @@ def main():
     if not TOKEN:
         log("FEHLER: SUPERVISOR_TOKEN fehlt – ist homeassistant_api aktiv?")
         return
+
+    # Beim ersten Start nach dem Umstieg auf 0.41.0 wandern die Einstellungen
+    # aus den Add-on-Optionen in die eigene Datei. Muss vor allem anderen
+    # laufen: ab hier liest jedes Modul aus konfig.
+    uebernommen = konfig.uebernehmen_falls_noetig()
+    if uebernommen:
+        log("Einstellungen aus den Add-on-Optionen übernommen (%d Werte). "
+            "Sie stehen ab jetzt im Add-on selbst." % uebernommen)
+
     bot = Bot()
     bot.keys_pushen()   # Schluessel beim Start an die Website
     status = {"laeuft": False, "letzter": None, "ergebnis": "noch nie"}
@@ -967,16 +994,17 @@ def main():
 
     threading.Thread(target=_scheduler, args=(bot, run_abruf), daemon=True).start()
     log("Nachsehen alle %d Minuten, ob ein neuer Auszug da ist (%s%s)."
-        % (TAKT_S // 60, hoco.FTP_HOST, hoco.FTP_VERZEICHNIS))
+        % (takt_s() // 60, konfig.wert("hoco_host"),
+           konfig.wert("hoco_verzeichnis")))
     if bot.meldung.get("aktiv"):
         log("Morgenmeldung: %s, Umfang '%s', an %s"
             % (bot.meldung.beschreibung(), bot.meldung.get("umfang"),
-               bot.meldung.get("ziel") or HOFBUERO))
+               bot.meldung.get("ziel") or hofbuero()))
     else:
         log("Morgenmeldung: aus")
 
     log("HOCO-Abruf gestartet. %d bestaetigt, %d offen. Website=%s" % (
-        len(bot.store["zuordnung"]), len(bot.store["offen"]), "an" if WEBSITE_API else "aus"))
+        len(bot.store["zuordnung"]), len(bot.store["offen"]), "an" if website_zugang()[0] else "aus"))
     while True:
         try:
             _verbinden(bot)

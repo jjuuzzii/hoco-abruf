@@ -1077,3 +1077,42 @@ Plugin gibt es keinen PHP-Interpreter auf dem Rechner; stattdessen eine eigene
 Prüfung (Klammerbalance über einen kleinen Lexer, jeder `hoco_`-Aufruf hat eine
 Definition, Datenbankschlüssel und Kurzcodes unverändert, Nonce und
 Rechteprüfung vorhanden) — 17 Punkte, alle grün. Das ersetzt kein `php -l`.
+
+---
+
+## 10. Einstellungen ins Add-on verlagert (21.08.2026)
+
+Bis 0.40.x standen sie in der Add-on-Konfiguration von Home Assistant und kamen
+als Umgebungsvariablen an (`run.sh`). Zwei Folgen, beide lästig: zwei
+Oberflächen für dieselbe Sache, und jede Änderung brauchte einen Neustart —
+Umgebungsvariablen ändern sich zur Laufzeit nicht.
+
+Seit **0.41.1** führt das Add-on sie selbst in `/data/konfig.json`
+(`app/konfig.py`). Gelesen wird bei jedem Zugriff, nicht beim Start: Deshalb
+gibt es keine Modulkonstanten mehr, und die vier FTP-Werte stehen nicht mehr in
+den Vorgabe-Parametern von `hoco.py` — die werden beim Import einmal gebunden,
+eine später geänderte Adresse wäre nie angekommen.
+
+In Home Assistant ist die Konfiguration jetzt **leer** (`options`/`schema` aus
+`config.yaml` entfernt, `hassio_api` ebenfalls — die Ersteinrichtung braucht den
+Supervisor nicht mehr).
+
+**Der Umstieg lief in zwei Schritten**, weil Home Assistant gespeicherte Werte
+verwirft, sobald sie nicht mehr im Schema stehen:
+
+1. **0.41.0** — `konfig.py` eingeführt, beim Start Übernahme aus den
+   Umgebungsvariablen. `config.yaml` und `run.sh` blieben unverändert, damit
+   dabei überhaupt etwas zu übernehmen war. Im Protokoll nachgewiesen:
+   *„Einstellungen aus den Add-on-Optionen übernommen (9 Werte)"*.
+2. **0.41.1** — `options`/`schema` entfernt, `run.sh` ohne `bashio::config`.
+   Danach die verwaisten Werte in `options.json` geleert (der Supervisor räumt
+   sie nicht selbst weg; das Geheimnis stand dort im Klartext) und zur Probe neu
+   gestartet: läuft, Werte halten.
+
+Nebenbei aufgefallen: `hofbuero_notify` hatte `notify.mobile_app_iphone` als
+Vorgabe — einen Dienst, den es nur auf dieser Anlage gibt. Damit hätte die
+Prüfung auf fehlende Pflichtwerte bei einem fremden Betrieb geschwiegen. Vorgabe
+entfernt; die Rückfallebene sitzt jetzt beim Aufrufer.
+
+`paypal_me` und `abo_jahrespreis` sind ganz entfallen — der Dienst ist seit dem
+18.08.2026 kostenlos, gelesen hat die Werte längst keine Zeile mehr.

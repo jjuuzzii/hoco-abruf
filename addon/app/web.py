@@ -19,8 +19,8 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-from . import (archiv, einrichtung, hoco, meldung, rueckstand, stil, texte,
-               ueberwachung, zeitplan)
+from . import (archiv, einrichtung, hoco, konfig, meldung, rueckstand, stil,
+               texte, ueberwachung, zeitplan)
 
 SHARE = "/share/fuetterungsabruf"
 PFERDE = os.path.join(SHARE, "pferde.json")
@@ -396,7 +396,7 @@ def _meldung_karte(m):
         % (stil.icon("uhr"), jetzt_betroffen,
            "" if jetzt_betroffen == 1 else "e",
            " checked" if m["aktiv"] else "", zustand, _e(m["zeit"]), tage,
-           umfang, _e(m["ziel"]), _e(meldung.STANDARD_ZIEL),
+           umfang, _e(m["ziel"]), _e(meldung.standard_ziel()),
            " checked" if m["auch_ohne_befund"] else "",
            vorschau, zuletzt_zeile,
            _e(m.beschreibung()),
@@ -539,12 +539,16 @@ def serve(bot, run_abruf, status, port):
             "<div class=card style='margin-bottom:16px'>"
             "<div class=card-header-sm><span class=card-title>Werte</span>%s</div>"
             "<div class=grau style='margin:6px 0 14px'>Mit <b>*</b> markierte "
-            "Felder braucht das Add-on zwingend. Gespeichert wird in die "
-            "Add-on-Konfiguration – dort stehen sie danach genauso."
-            "</div>%s"
+            "Felder braucht das Add-on zwingend. Gespeichert wird im Add-on "
+            "selbst (<code>/data/konfig.json</code>); die Werte gelten sofort. "
+            "%s</div>%s"
             "<button class='btn btn-success' name=speichern value=1>%s "
             "Werte speichern</button></div>"
-            % (stil.icon("plaene"), felder, stil.icon("speichern")))
+            % (stil.icon("plaene"),
+               "" if konfig.eigene_datei() else
+               "<b>Noch nichts gespeichert</b> – bis dahin gilt, was in den "
+               "Add-on-Optionen steht.",
+               felder, stil.icon("speichern")))
 
         pruefungen = (
             "<div class=section-header><h2>Verbindungen prüfen</h2></div>"
@@ -574,21 +578,16 @@ def serve(bot, run_abruf, status, port):
 
         abschluss = (
             "<div class=card style='margin-top:16px'>"
-            "<div class=card-header-sm><span class=card-title>Übernehmen</span>%s"
+            "<div class=card-header-sm><span class=card-title>Fertig</span>%s"
             "</div>"
             "<div class=grau style='margin:6px 0 12px'>Gespeicherte Werte "
-            "erreichen das Add-on erst mit einem <b>Neustart</b> – danach "
-            "beginnt der erste Abruf von selbst. Das Abhaken blendet diese "
-            "Ansicht aus der Startseite aus; erreichbar bleibt sie."
+            "gelten <b>sofort</b> – der nächste Abruf arbeitet damit, ein "
+            "Neustart ist nicht nötig. Das Abhaken nimmt diese Ansicht aus der "
+            "Seitenleiste; über die Einstellungen bleibt sie erreichbar."
             "</div>"
-            "<div style='display:flex;gap:8px;flex-wrap:wrap'>"
-            "<button class=btn name=neustart value=1 "
-            "onclick=\"return confirm('Add-on jetzt neu starten? Die "
-            "Oberfläche ist kurz nicht erreichbar.')\">%s Speichern und neu "
-            "starten</button>"
             "<button class='btn btn-success' name=fertig value='%s'>%s "
-            "Einrichtung %s</button></div></div>"
-            % (stil.icon("start"), stil.icon("zurueck"),
+            "Einrichtung %s</button></div>"
+            % (stil.icon("haken"),
                "0" if fertig else "1", stil.icon("haken"),
                "wieder öffnen" if fertig else "abhaken"))
 
@@ -853,7 +852,7 @@ def serve(bot, run_abruf, status, port):
                "<div class=card-header-sm><span class=card-title>Datenquelle</span>%s</div>"
                "<div class=grau>CSV-Auszug von <b>%s%s</b>, etwa alle 30 Minuten neu.<br>"
                "Zuletzt verarbeitet: <b>%s</b>.</div></div>"
-               % (stil.icon("server"), _e(hoco.FTP_HOST), _e(hoco.FTP_VERZEICHNIS),
+               % (stil.icon("server"), _e(konfig.wert("hoco_host")), _e(konfig.wert("hoco_verzeichnis")),
                   _e(quelle)))
         out += _meldung_karte(bot.meldung)
         if hinweis.get("text"):
@@ -1118,30 +1117,14 @@ def serve(bot, run_abruf, status, port):
                         werte.get("website_api", ""), werte.get("website_secret", ""))
                 elif form.get("fertig"):
                     einrichtung.abschliessen(form["fertig"][0] == "1")
-                elif form.get("speichern") or form.get("neustart"):
+                elif form.get("speichern"):
                     try:
                         einrichtung.speichern(werte)
                         hinweis["art"] = "ok"
-                        hinweis["text"] = ("Werte in die Add-on-Konfiguration "
-                                           "geschrieben.")
+                        hinweis["text"] = ("Gespeichert – die Werte gelten ab "
+                                           "sofort.")
                     except Exception as e:
-                        hinweis["text"] = ("Speichern fehlgeschlagen: %s. Die "
-                                           "Werte lassen sich auch im Add-on-UI "
-                                           "von Home Assistant eintragen." % e)
-                    if form.get("neustart") and hinweis.get("art") == "ok":
-                        # Erst antworten, dann neu starten - sonst bricht die
-                        # Verbindung mitten in der Antwort ab und der Browser
-                        # zeigt einen Fehler statt der Seite.
-                        def _spaeter():
-                            time.sleep(2)
-                            try:
-                                einrichtung.neustart()
-                            except Exception as e:
-                                print("Neustart: %s" % e, flush=True)
-                        threading.Thread(target=_spaeter, daemon=True).start()
-                        hinweis["text"] = ("Werte gespeichert. Das Add-on startet "
-                                           "gleich neu - die Seite ist kurz nicht "
-                                           "erreichbar.")
+                        hinweis["text"] = "Speichern fehlgeschlagen: %s" % e
             elif pfad.endswith("/freigeben"):
                 nummer = form.get("nummer", [""])[0]
                 if nummer:

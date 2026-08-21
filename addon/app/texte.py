@@ -20,13 +20,15 @@ import os
 import string
 import threading
 
+from . import konfig
+
 DATA_DIR = "/data"
 DATEI = os.path.join(DATA_DIR, "texte.json")
 
 
 def stall():
     """Name des Betriebs aus den Add-on-Optionen, sonst der Produktname."""
-    return os.environ.get("STALL_NAME", "").strip() or "HOCO-Abruf"
+    return konfig.wert("stall_name") or "HOCO-Abruf"
 
 # gruppe, titel, text, platzhalter {name: Beispielwert fuer die Vorschau}
 STANDARD = {
