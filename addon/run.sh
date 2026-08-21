@@ -16,15 +16,10 @@ export HOCO_VERZEICHNIS="$(bashio::config 'hoco_verzeichnis' '')"
 export HOCO_BENUTZER="$(bashio::config 'hoco_benutzer' '')"
 export HOCO_PASSWORT="$(bashio::config 'hoco_passwort' '')"
 
-
 # Website (WordPress-Plugin): Link-Basis, Push-Endpunkt, geheimer Schluessel.
 export WEBSITE_LINK="$(bashio::config 'website_link' '')"
 export WEBSITE_API="$(bashio::config 'website_api' '')"
 export WEBSITE_SECRET="$(bashio::config 'website_secret' '')"
-
-# Abo (Stufe 1): PayPal-Kennung + Jahresbeitrag fuer die Zahlungshinweise.
-export PAYPAL_ME="$(bashio::config 'paypal_me' '')"
-export ABO_JAHRESPREIS="$(bashio::config 'abo_jahrespreis' '')"
 
 # Ingress-Port (die Weboberfläche lauscht darauf; der Supervisor proxyt ihn).
 export ABRUF_INGRESS_PORT="8099"

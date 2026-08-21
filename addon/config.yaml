@@ -19,7 +19,7 @@
 # echte Befehle (/anmelden, /abruf, /hilfe) und - kurz nach /anmelden - auf die
 # Pferd-Antwort. Auf alles andere schweigt er.
 name: HOCO-Abruf
-version: "0.40.2"
+version: "0.40.3"
 slug: fuetterungsabruf
 description: >-
   Fütterungsdaten vom Wasserbauer-HOCO-Rechner: WhatsApp-Bot für die Einsteller (/anmelden mit
@@ -81,10 +81,6 @@ options:
   website_link: ""
   website_api: ""
   website_secret: ""
-  # Abo (Stufe 1): jährlicher Beitrag per PayPal. Kennung = paypal.me/<kennung>,
-  # Betrag in EUR wird im Zahl-Link vorausgefüllt. Leer = nur „im Hofbüro".
-  paypal_me: ""
-  abo_jahrespreis: "12"
   log_stufe: info
 
 schema:
@@ -98,8 +94,6 @@ schema:
   website_link: str?
   website_api: str?
   website_secret: password?
-  paypal_me: str?
-  abo_jahrespreis: str?
   log_stufe: list(debug|info|warning|error)?
 
 backup: hot
