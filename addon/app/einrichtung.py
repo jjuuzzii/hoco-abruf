@@ -34,37 +34,51 @@ DATEI = os.path.join(DATA_DIR, "einrichtung.json")
 SUPERVISOR = "http://supervisor"
 TOKEN = os.environ.get("SUPERVISOR_TOKEN", "")
 
-# Kennung, Beschriftung, Hilfetext, Pflichtfeld?
+# Kennung, Beschriftung, Hilfetext, Pflichtfeld?, Folge wenn es fehlt
+#
+# Pflicht ist nur, was den Betrieb wirklich blockiert. Der Stallname gehoert
+# nicht dazu: ohne ihn laeuft alles weiter, im Kopf der Pferdeseiten steht dann
+# der Name der Website.
 FELDER = [
     ("stall_name", "Name des Betriebs",
      "Steht im Kopf der Pferdeseiten, in den WhatsApp-Texten und hier unten "
-     "links. Zum Beispiel &bdquo;Aktivstall Musterhof&ldquo;.", True),
+     "links. Zum Beispiel &bdquo;Aktivstall Musterhof&ldquo;. Leer lassen geht "
+     "auch - dann steht dort der Name der Website.", False,
+     "steht im Kopf der Pferdeseiten der Name der Website"),
     ("hoco_host", "Adresse des F&uuml;tterungsrechners",
      "IP oder Name des HOCO-Rechners im Stallnetz. Er gibt seinen Auszug per "
-     "FTP heraus - meist ohne Anmeldung.", True),
+     "FTP heraus - meist ohne Anmeldung.", True,
+     "holt das Add-on keine Daten"),
     ("hoco_verzeichnis", "Verzeichnis des Auszugs",
-     "Dort legt der Rechner seine CSV-Dateien ab. &Uuml;blich ist /export.", True),
+     "Dort legt der Rechner seine CSV-Dateien ab. &Uuml;blich ist /export.", True,
+     "findet das Add-on den Auszug nicht"),
     ("hoco_benutzer", "FTP-Benutzer",
      "Leer lassen, wenn der Rechner anonym herausgibt - das ist der Normalfall.",
-     False),
-    ("hoco_passwort", "FTP-Kennwort", "Nur zusammen mit einem Benutzer.", False),
+     False, "meldet sich das Add-on anonym an"),
+    ("hoco_passwort", "FTP-Kennwort", "Nur zusammen mit einem Benutzer.", False,
+     "meldet sich das Add-on ohne Kennwort an"),
     ("hofbuero_notify", "Benachrichtigung ins Hofb&uuml;ro",
      "Notify-Dienst f&uuml;r Freigaben und die Morgenmeldung, z. B. "
      "<code>notify.mobile_app_iphone</code>. Der Dienst muss in Home Assistant "
-     "schon vorhanden sein.", True),
+     "schon vorhanden sein.", True,
+     "kommen keine Freigaben und keine Morgenmeldung an"),
     ("website_api", "Schnittstelle der Website",
      "Die Adresse aus der Einrichtung des Plugins, z. B. "
      "<code>https://beispielhof.de/wp-json/hoco/v1</code>. Leer lassen, wenn "
-     "die Zahlen nur per WhatsApp gehen sollen.", False),
+     "die Zahlen nur per WhatsApp gehen sollen.", False,
+     "gehen die Zahlen nur per WhatsApp"),
     ("website_link", "Link-Basis der Pferdeseiten",
      "Ebenfalls aus dem Plugin, z. B. "
-     "<code>https://beispielhof.de/fuetterung/?k=</code>.", False),
+     "<code>https://beispielhof.de/fuetterung/?k=</code>.", False,
+     "verschickt der Bot keine Links zur Pferdeseite"),
     ("website_secret", "Gemeinsames Geheimnis",
      "Der Wert, den die Einrichtung des Plugins anzeigt. Ohne ihn nimmt die "
-     "Website keine Zahlen an.", False),
+     "Website keine Zahlen an.", False,
+     "nimmt die Website keine Zahlen an"),
 ]
 
-PFLICHT = [kennung for kennung, _t, _h, pflicht in FELDER if pflicht]
+PFLICHT = [kennung for kennung, _t, _h, pflicht, _f in FELDER if pflicht]
+FOLGE = {kennung: folge for kennung, _t, _h, _p, folge in FELDER}
 
 # Kennung der Option -> Umgebungsvariable, unter der sie im laufenden Add-on
 # ankommt. Nur fuer die Felder, die diese Ansicht prueft.

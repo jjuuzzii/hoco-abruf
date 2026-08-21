@@ -28,7 +28,7 @@ import urllib.parse
 
 import websocket  # websocket-client
 
-from . import abruf, hoco, meldung, rueckstand, web, texte, wunsch
+from . import bestand, abruf, hoco, meldung, rueckstand, web, texte, wunsch
 from .texte import T
 
 CORE_HTTP = "http://supervisor/core"
@@ -264,6 +264,72 @@ class Bot:
         if st:
             log("Schluessel an Website gepusht (%d)." % len(mapping))
 
+    def bekannte_namen(self):
+        """{Nummer: Name} - der zuletzt bekannte Stand je Nummer.
+
+        PANEL ist nur der Grundstock aus der Anfangszeit. Massgeblich ist, was
+        beim letzten Abruf im Auszug stand; verschwindet eine Nummer daraus,
+        bleibt ihr letzter Name hier stehen - genau den braucht das Nachziehen,
+        um das Pferd unter seiner neuen Nummer wiederzufinden.
+        """
+        namen = dict(PANEL)
+        for nr, name in (self.store.get("pferdenamen") or {}).items():
+            try:
+                namen[int(nr)] = str(name)
+            except (TypeError, ValueError):
+                continue
+        return namen
+
+    def nummern_nachziehen(self):
+        """Haengt Zuordnungen um, deren Pferdenummer sich verschoben hat.
+
+        Wird nach jedem Abruf aufgerufen. Der Zugangsschluessel wandert mit,
+        Link und Aufkleber bleiben also gueltig.
+        """
+        try:
+            with open(PFERDE, encoding="utf-8") as f:
+                daten = json.load(f)
+        except Exception:
+            return {}
+
+        aktuell = bestand.namen_aus_auszug(daten)
+        if not aktuell:
+            return {}
+
+        # Nur Nummern betrachten, an denen wirklich jemand haengt.
+        belegt = set(self.keys)
+        for eintrag in (self.store.get("zuordnung") or {}).values():
+            belegt.update(_nrs(eintrag))
+        bisher = {nr: name for nr, name in self.bekannte_namen().items()
+                  if nr in belegt}
+
+        umzug, unklar = bestand.pruefen(
+            daten, bisher, set(aktuell) & belegt,
+            self.store.get("transponder") or {})
+
+        if umzug:
+            bestand.anwenden(umzug, self.keys, self.store["zuordnung"])
+            for alt, (neu, name) in sorted(umzug.items()):
+                log("Pferdenummer nachgezogen: %s war Nr. %d, ist jetzt Nr. %d "
+                    "(Zugang bleibt gueltig)." % (name, alt, neu))
+            self._keys_speichern()
+
+        for alt, name, grund in unklar:
+            log("Zuordnung unklar: %s (Nr. %d) - %s. Bitte im Hofbuero pruefen."
+                % (name, alt, grund))
+
+        # Namen und Transponder des aktuellen Auszugs merken - sie sind die
+        # Grundlage fuer das naechste Mal.
+        self.store["pferdenamen"] = {str(nr): name for nr, name in aktuell.items()}
+        self.store["transponder"] = {
+            str(p.get("nr")): str(p.get("transponder") or "")
+            for p in daten.get("pferde", []) if p.get("transponder")}
+        self._speichern()
+
+        if umzug:
+            self.keys_pushen()      # die Website braucht die neue Zuordnung
+        return umzug
+
     def daten_pushen(self):
         try:
             with open(PFERDE, encoding="utf-8") as f:
@@ -322,10 +388,12 @@ class Bot:
         return _nrs(eintrag)
 
     def name_von(self, nr):
+        """Name zu einer Pferdenummer - aus dem letzten Auszug, sonst PANEL."""
         try:
-            return PANEL.get(int(nr), str(nr))
+            nr = int(nr)
         except Exception:
             return str(nr)
+        return self.bekannte_namen().get(nr, str(nr))
 
     def kontakt_name(self, nummer):
         return self.store.get("namen", {}).get(str(nummer), "")
@@ -871,6 +939,12 @@ def main():
         except Exception as e:
             res = "Fehler: %s" % e
         else:
+            try:
+                # Erst die Nummern geradeziehen, dann pushen - sonst schickt
+                # das Add-on Zahlen zu Nummern, die niemandem mehr gehoeren.
+                bot.nummern_nachziehen()
+            except Exception as e:
+                log("Nummern nachziehen: %s" % e)
             try:
                 bot.daten_pushen()   # nach erfolgreichem Abruf an die Website
             except Exception as e:

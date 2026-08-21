@@ -494,12 +494,18 @@ def serve(bot, run_abruf, status, port):
                     % (stil.icon("haken"),
                        _e(einrichtung.zustand().get("stand", "?"))))
         elif offen:
-            fehlt = ", ".join(
-                titel.replace("&uuml;", "ü").replace("&auml;", "ä")
-                for kennung, titel, _h, _p in einrichtung.FELDER if kennung in offen)
-            kopf = ("<div class='hinweis hinweis-warn'>%s<div>Es fehlt noch: "
-                    "<b>%s</b>. Ohne diese Angaben holt das Add-on keine Daten."
-                    "</div></div>" % (stil.icon("warnung"), _e(fehlt)))
+            # Je fehlendem Wert steht dabei, was ohne ihn nicht geht. Ein
+            # pauschales "holt keine Daten" waere bei den meisten Feldern
+            # schlicht falsch und macht die Warnung wertlos.
+            punkte = "".join(
+                "<li><b>%s</b> &ndash; sonst %s</li>"
+                % (_e(titel.replace("&uuml;", "ü").replace("&auml;", "ä")),
+                   _e(einrichtung.FOLGE.get(kennung, "fehlt dem Add-on etwas")))
+                for kennung, titel, _h, _p, _f in einrichtung.FELDER
+                if kennung in offen)
+            kopf = ("<div class='hinweis hinweis-warn'>%s<div>Es fehlt noch:"
+                    "<ul style='margin:6px 0 0 18px'>%s</ul></div></div>"
+                    % (stil.icon("warnung"), punkte))
         else:
             kopf = ("<div class='hinweis hinweis-ok'>%s<div>Alle n&ouml;tigen "
                     "Werte stehen. Pr&uuml;fe unten die Verbindungen und hake die "
@@ -515,7 +521,7 @@ def serve(bot, run_abruf, status, port):
                      "</div></div>" % (stil.icon("warnung"), _e(grund)))
 
         felder = ""
-        for kennung, titel, hilfe, pflicht in einrichtung.FELDER:
+        for kennung, titel, hilfe, pflicht, _folge in einrichtung.FELDER:
             typ = "password" if kennung.endswith(("passwort", "secret")) else "text"
             felder += (
                 "<div style='margin-bottom:14px'>"
