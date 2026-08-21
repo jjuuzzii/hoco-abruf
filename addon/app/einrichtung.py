@@ -42,23 +42,23 @@ TOKEN = os.environ.get("SUPERVISOR_TOKEN", "")
 FELDER = [
     ("stall_name", "Name des Betriebs",
      "Steht im Kopf der Pferdeseiten, in den WhatsApp-Texten und hier unten "
-     "links. Zum Beispiel &bdquo;Aktivstall Musterhof&ldquo;. Leer lassen geht "
+     "links. Zum Beispiel „Aktivstall Musterhof“. Leer lassen geht "
      "auch - dann steht dort der Name der Website.", False,
      "steht im Kopf der Pferdeseiten der Name der Website"),
-    ("hoco_host", "Adresse des F&uuml;tterungsrechners",
+    ("hoco_host", "Adresse des Fütterungsrechners",
      "IP oder Name des HOCO-Rechners im Stallnetz. Er gibt seinen Auszug per "
      "FTP heraus - meist ohne Anmeldung.", True,
      "holt das Add-on keine Daten"),
     ("hoco_verzeichnis", "Verzeichnis des Auszugs",
-     "Dort legt der Rechner seine CSV-Dateien ab. &Uuml;blich ist /export.", True,
+     "Dort legt der Rechner seine CSV-Dateien ab. Üblich ist /export.", True,
      "findet das Add-on den Auszug nicht"),
     ("hoco_benutzer", "FTP-Benutzer",
      "Leer lassen, wenn der Rechner anonym herausgibt - das ist der Normalfall.",
      False, "meldet sich das Add-on anonym an"),
     ("hoco_passwort", "FTP-Kennwort", "Nur zusammen mit einem Benutzer.", False,
      "meldet sich das Add-on ohne Kennwort an"),
-    ("hofbuero_notify", "Benachrichtigung ins Hofb&uuml;ro",
-     "Notify-Dienst f&uuml;r Freigaben und die Morgenmeldung, z. B. "
+    ("hofbuero_notify", "Benachrichtigung ins Hofbüro",
+     "Notify-Dienst für Freigaben und die Morgenmeldung, z. B. "
      "<code>notify.mobile_app_iphone</code>. Der Dienst muss in Home Assistant "
      "schon vorhanden sein.", True,
      "kommen keine Freigaben und keine Morgenmeldung an"),
@@ -262,7 +262,7 @@ def pruefe_notify(bot, dienst):
         return True, ("Verschickt. Steht die Meldung auf dem Telefon, ist der "
                       "Dienst richtig.")
     return False, ("Home Assistant hat den Aufruf nicht angenommen. Gibt es "
-                   "<code>%s.%s</code> wirklich? (Entwicklerwerkzeuge &rarr; "
+                   "<code>%s.%s</code> wirklich? (Entwicklerwerkzeuge → "
                    "Aktionen)" % (domain, service))
 
 

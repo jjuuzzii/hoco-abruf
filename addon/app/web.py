@@ -489,7 +489,7 @@ def serve(bot, run_abruf, status, port):
         fertig = einrichtung.erledigt()
         if fertig:
             kopf = ("<div class='hinweis hinweis-ok'>%s<div><b>Eingerichtet</b> "
-                    "&ndash; abgeschlossen am %s. Hier stehen die Werte weiterhin "
+                    "– abgeschlossen am %s. Hier stehen die Werte weiterhin "
                     "zum Nachbessern.</div></div>"
                     % (stil.icon("haken"),
                        _e(einrichtung.zustand().get("stand", "?"))))
@@ -498,8 +498,8 @@ def serve(bot, run_abruf, status, port):
             # pauschales "holt keine Daten" waere bei den meisten Feldern
             # schlicht falsch und macht die Warnung wertlos.
             punkte = "".join(
-                "<li><b>%s</b> &ndash; sonst %s</li>"
-                % (_e(titel.replace("&uuml;", "ü").replace("&auml;", "ä")),
+                "<li><b>%s</b> – sonst %s</li>"
+                % (_e(titel),
                    _e(einrichtung.FOLGE.get(kennung, "fehlt dem Add-on etwas")))
                 for kennung, titel, _h, _p, _f in einrichtung.FELDER
                 if kennung in offen)
@@ -507,17 +507,17 @@ def serve(bot, run_abruf, status, port):
                     "<ul style='margin:6px 0 0 18px'>%s</ul></div></div>"
                     % (stil.icon("warnung"), punkte))
         else:
-            kopf = ("<div class='hinweis hinweis-ok'>%s<div>Alle n&ouml;tigen "
-                    "Werte stehen. Pr&uuml;fe unten die Verbindungen und hake die "
+            kopf = ("<div class='hinweis hinweis-ok'>%s<div>Alle nötigen "
+                    "Werte stehen. Prüfe unten die Verbindungen und hake die "
                     "Einrichtung dann ab.</div></div>" % stil.icon("haken"))
 
         darf, grund = einrichtung.schreibbar()
         if not darf:
             kopf += ("<div class='hinweis hinweis-fehler'>%s<div>Das Add-on kann "
                      "seine Optionen nicht selbst schreiben (%s). Trage die Werte "
-                     "dann von Hand unter <b>Einstellungen &rarr; Add-ons &rarr; "
-                     "HOCO-Abruf &rarr; Konfiguration</b> ein &ndash; die "
-                     "Pr&uuml;fungen hier unten funktionieren trotzdem."
+                     "dann von Hand unter <b>Einstellungen → Add-ons → "
+                     "HOCO-Abruf → Konfiguration</b> ein – die "
+                     "Prüfungen hier unten funktionieren trotzdem."
                      "</div></div>" % (stil.icon("warnung"), _e(grund)))
 
         felder = ""
@@ -540,51 +540,51 @@ def serve(bot, run_abruf, status, port):
             "<div class=card-header-sm><span class=card-title>Werte</span>%s</div>"
             "<div class=grau style='margin:6px 0 14px'>Mit <b>*</b> markierte "
             "Felder braucht das Add-on zwingend. Gespeichert wird in die "
-            "Add-on-Konfiguration &ndash; dort stehen sie danach genauso."
+            "Add-on-Konfiguration – dort stehen sie danach genauso."
             "</div>%s"
             "<button class='btn btn-success' name=speichern value=1>%s "
             "Werte speichern</button></div>"
             % (stil.icon("plaene"), felder, stil.icon("speichern")))
 
         pruefungen = (
-            "<div class=section-header><h2>Verbindungen pr&uuml;fen</h2></div>"
+            "<div class=section-header><h2>Verbindungen prüfen</h2></div>"
             + _pruefkarte(
-                "hoco", "F&uuml;tterungsrechner",
+                "hoco", "Fütterungsrechner",
                 "Meldet sich am FTP an und sieht nach, ob dort Auszüge liegen. "
-                "Gepr&uuml;ft werden die Werte, die oben im Formular stehen "
-                "&ndash; auch ungespeicherte.",
-                "Verbindung pr&uuml;fen")
+                "Geprüft werden die Werte, die oben im Formular stehen "
+                "– auch ungespeicherte.",
+                "Verbindung prüfen")
             + _pruefkarte(
-                "notify", "Benachrichtigung ins Hofb&uuml;ro",
-                "Schickt eine Testmeldung an den eingetragenen Dienst. &Uuml;ber "
-                "diesen Weg kommen sp&auml;ter die Freigaben und die "
+                "notify", "Benachrichtigung ins Hofbüro",
+                "Schickt eine Testmeldung an den eingetragenen Dienst. Über "
+                "diesen Weg kommen später die Freigaben und die "
                 "Morgenmeldung.",
                 "Testmeldung senden")
             + _pruefkarte(
                 "whatsapp", "WhatsApp",
                 "Sieht nach, ob die WhatsApp-Integration in Home Assistant "
-                "eingerichtet ist. Ohne sie l&auml;uft alles &uuml;brige weiter "
-                "&ndash; nur der Bot antwortet dann nicht.",
+                "eingerichtet ist. Ohne sie läuft alles übrige weiter "
+                "– nur der Bot antwortet dann nicht.",
                 "Dienst suchen")
             + _pruefkarte(
                 "website", "Website",
-                "Fragt die Schnittstelle des Plugins ab und pr&uuml;ft dabei das "
+                "Fragt die Schnittstelle des Plugins ab und prüft dabei das "
                 "gemeinsame Geheimnis.",
-                "Website pr&uuml;fen"))
+                "Website prüfen"))
 
         abschluss = (
             "<div class=card style='margin-top:16px'>"
             "<div class=card-header-sm><span class=card-title>Übernehmen</span>%s"
             "</div>"
             "<div class=grau style='margin:6px 0 12px'>Gespeicherte Werte "
-            "erreichen das Add-on erst mit einem <b>Neustart</b> &ndash; danach "
+            "erreichen das Add-on erst mit einem <b>Neustart</b> – danach "
             "beginnt der erste Abruf von selbst. Das Abhaken blendet diese "
             "Ansicht aus der Startseite aus; erreichbar bleibt sie."
             "</div>"
             "<div style='display:flex;gap:8px;flex-wrap:wrap'>"
             "<button class=btn name=neustart value=1 "
             "onclick=\"return confirm('Add-on jetzt neu starten? Die "
-            "Oberfl&auml;che ist kurz nicht erreichbar.')\">%s Speichern und neu "
+            "Oberfläche ist kurz nicht erreichbar.')\">%s Speichern und neu "
             "starten</button>"
             "<button class='btn btn-success' name=fertig value='%s'>%s "
             "Einrichtung %s</button></div></div>"
@@ -612,6 +612,11 @@ def serve(bot, run_abruf, status, port):
         links = ""
         start = _start()
         for kennung, titel, symbol in ANSICHTEN:
+            # Die Ersteinrichtung ist erledigt, sobald nichts mehr fehlt - dann
+            # gehoert sie nicht dauerhaft in die Seitenleiste. Der Abschnitt
+            # bleibt bestehen und ist ueber die Einstellungen erreichbar.
+            if kennung == "view-einrichtung" and not einrichtung.noetig():
+                continue
             aktiv = " active" if kennung == start else ""
             links += ("<li><a class='nav-link%s' data-target='%s'>%s %s</a></li>"
                       % (aktiv, kennung, stil.icon(symbol), _e(titel)))
@@ -828,7 +833,22 @@ def serve(bot, run_abruf, status, port):
         """
         d = _lade(PFERDE, {})
         quelle = d.get("quelle") or "noch keine"
+        zustand = einrichtung.zustand()
+        einr = ("<div class=card style='margin-bottom:16px'>"
+                "<div class=card-header-sm><span class=card-title>Ersteinrichtung"
+                "</span>%s</div>"
+                "<div class=grau style='margin:6px 0 10px'>Alle Werte stehen%s. "
+                "Hier lassen sie sich nachbessern und die Verbindungen einzeln "
+                "prüfen.</div>"
+                "<a class=card-link data-goto=view-einrichtung>Ersteinrichtung "
+                "öffnen %s</a></div>"
+                % (stil.icon("haken"),
+                   (" – abgehakt am %s" % _e(zustand.get("stand", "")))
+                   if zustand.get("erledigt") else "",
+                   stil.icon("pfeil"))) if not einrichtung.noetig() else ""
+
         out = ("<div class=section-header><h2>Einstellungen</h2></div>"
+               + einr +
                "<div class=card style='margin-bottom:16px'>"
                "<div class=card-header-sm><span class=card-title>Datenquelle</span>%s</div>"
                "<div class=grau>CSV-Auszug von <b>%s%s</b>, etwa alle 30 Minuten neu.<br>"

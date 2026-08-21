@@ -19,7 +19,7 @@
 # echte Befehle (/anmelden, /abruf, /hilfe) und - kurz nach /anmelden - auf die
 # Pferd-Antwort. Auf alles andere schweigt er.
 name: HOCO-Abruf
-version: "0.40.1"
+version: "0.40.2"
 slug: fuetterungsabruf
 description: >-
   Fütterungsdaten vom Wasserbauer-HOCO-Rechner: WhatsApp-Bot für die Einsteller (/anmelden mit
